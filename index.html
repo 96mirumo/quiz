@@ -84,4 +84,16 @@
                         feedback.innerText = "";
                         loadQuiz();
                     } else {
-                        document.getElementById('quiz-app').innerHTML = "<h2>🎉 1단원 완료! 수
+                        document.getElementById('quiz-app').innerHTML = "<h2>🎉 1단원 완료! 수고하셨습니다.</h2>";
+                    }
+                }, 800);
+            } else {
+                feedback.innerText = "❌ 다시 한번 확인해보세요!";
+                feedback.style.color = "#dc3545";
+            }
+        }
+
+        loadQuiz();
+    </script>
+</body>
+</html>
