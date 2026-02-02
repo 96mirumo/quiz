@@ -11,7 +11,7 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; font-size: 16px; }
         .container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; min-height: 90vh; }
         
-        /* 메인 메뉴: 한국어 적용 & 밋밋한 디자인 */
+        /* 메인 디자인 */
         .menu-card { background: var(--card); padding: 18px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 12px; cursor:pointer; }
         .unit-title { font-weight: 500; font-size: 1rem; color: #444; }
         
@@ -19,37 +19,42 @@
         .quiz-card { background: var(--card); padding: 20px; border: 1px solid var(--border); border-radius: 4px; margin-top: 10px; }
         .q-text { font-size: 1.1rem; font-weight: 500; margin-bottom: 25px; color: #222; text-align: center; word-break: keep-all; }
         
-        /* 중앙 정렬된 입력창 */
+        /* 입력창 중앙 정렬 */
         .input-area { text-align: center; width: 100%; }
         input[type="text"] { 
             width: 90%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; 
             font-size: 1rem; margin-bottom: 15px; outline: none; text-align: center; 
         }
         
-        /* 버튼 디자인: 밋밋하고 차이 없게 */
+        /* 버튼 가로 배열 & 동일 크기 */
+        .btn-row { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
         .action-btn { 
-            width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 4px; 
-            font-weight: 400; font-size: 1rem; cursor: pointer; background: var(--btn-bg); color: #666; 
+            flex: 1; padding: 14px; border: 1px solid #ddd; border-radius: 4px; 
+            font-size: 0.9rem; cursor: pointer; background: var(--btn-bg); color: #666;
+            display: flex; align-items: center; justify-content: center;
         }
-        .next-btn { background: #444 !important; color: #fff !important; margin-top: 10px; }
+        .next-btn { background: #444 !important; color: #fff !important; }
         
-        /* 하단 닫기 버튼 */
-        .bottom-nav { margin-top: auto; padding-top: 30px; text-align: center; }
-        .close-link { color: #999; font-size: 0.9rem; text-decoration: underline; cursor: pointer; }
+        /* 상태 표시 (스텔스 정답/오답) */
+        .status-msg { font-size: 0.85rem; margin-bottom: 10px; text-align: center; font-weight: bold; }
+        .is-correct { color: #aaaaaa; } /* 너무 튀지 않는 정답 표시 */
+        .is-wrong { color: #d9534f; }
 
-        .hidden { display: none; }
-        .progress-bar { height: 2px; background: #eee; width: 100%; margin-bottom: 15px; }
+        .hidden { display: none !important; }
+        .progress-bar { height: 2px; background: #eee; width: 100%; margin-bottom: 10px; }
         .p-inner { height: 100%; background: #bbb; transition: 0.3s; }
-        .correct-ans { color: #555; font-size: 0.85rem; margin: 10px 0; font-weight: bold; text-align: center; }
+        
+        /* 하단 네비게이션 */
+        .bottom-nav { margin-top: auto; padding: 20px 0; text-align: center; }
+        .nav-link { color: #999; font-size: 0.85rem; text-decoration: none; cursor: pointer; margin: 0 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="view-menu">
-            <h3 style="color:#222; margin: 0 0 20px 5px; font-weight: 400;">업무 보고서 관리</h3>
-            <div class="menu-card" onclick="resumeLast()" style="background:#444; color:#fff; border:none;">
+            <div style="height: 40px;"></div> <div class="menu-card" onclick="resumeLast()" style="background:#444; color:#fff; border:none;">
                 <div style="font-size:1.1rem;">이전 문제 이어서 풀기</div>
-                <small id="resume-info" style="opacity:0.7;">기록을 불러오는 중...</small>
+                <small id="resume-info" style="opacity:0.7;">기록 로드 중...</small>
             </div>
             
             <div id="unit-buttons"></div>
@@ -62,28 +67,34 @@
 
         <div id="view-quiz" class="hidden">
             <div class="progress-bar"><div id="p-bar" class="p-inner"></div></div>
-            <div id="display-unit" style="font-size:0.8rem; color:#aaa; margin-bottom:10px; text-align:center;"></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#aaa; margin-bottom:10px; padding:0 5px;">
+                <span id="display-unit"></span>
+                <span id="p-text"></span>
+            </div>
 
             <div class="quiz-card">
+                <div id="status-display" class="status-msg"></div>
                 <div id="q-text" class="q-text"></div>
                 
                 <div class="input-area" id="area-subjective">
                     <input type="text" id="user-ans" placeholder="정답 입력" autocomplete="off">
-                    <button id="btn-check" class="action-btn" onclick="checkSubjective()">Verify</button>
+                    <div class="btn-row" id="row-check">
+                        <button class="action-btn" style="flex:1" onclick="toggleHint()">Info</button>
+                        <button class="action-btn" style="flex:1" onclick="checkSubjective()">Verify</button>
+                    </div>
                 </div>
 
-                <div id="area-objective" class="hidden"></div>
-                <div id="correct-display" class="correct-ans hidden"></div>
-                <div id="hint-box" class="hidden" style="background:#fafafa; padding:12px; margin:15px 0; font-size:0.85rem; border:1px solid #eee; text-align:center;"></div>
+                <div id="hint-box" class="hidden" style="background:#fafafa; padding:12px; margin:15px 0; font-size:0.85rem; border:1px solid #eee; text-align:center; word-break:keep-all;"></div>
                 
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button class="action-btn" style="flex:1;" onclick="toggleHint()">Info</button>
-                    <button id="btn-next" class="action-btn next-btn" style="flex:1; display:none;" onclick="nextStep()">Next Stage</button>
+                <div class="btn-row hidden" id="row-next">
+                    <button class="action-btn" style="flex:1" onclick="toggleHint()">Info</button>
+                    <button class="action-btn next-btn" style="flex:1" onclick="nextStep()">Next Stage</button>
                 </div>
             </div>
 
             <div class="bottom-nav">
-                <span class="close-link" onclick="goHome()">목록으로 돌아가기</span>
+                <span class="nav-link" id="btn-prev" onclick="prevStep()">이전 문제</span>
+                <span class="nav-link" onclick="goHome()">목록으로</span>
             </div>
         </div>
     </div>
@@ -92,37 +103,36 @@
         // PDF 기반 1단원 60문제 (핵심 데이터)
         const quizData = {
             1: [
-                { type: "S", q: "소프트웨어의 품질 향상을 위해 기존 시스템을 분석하여 재구성하는 공학은?", a: ["재공학"], h: "분석->재구성->역공학->이관" },
-                { type: "S", q: "애자일 선언문 중 계획에 따르기보다 무엇에 대응하는 것을 강조하는가?", a: ["변화"], h: "Responding to change" },
-                { type: "S", q: "XP의 5가지 가치 중 하나로, 개발자가 자신의 코드를 정직하게 수정하는 것은?", a: ["용기"], h: "Courage" },
-                { type: "S", q: "객체지향 설계 원칙 중 자식 클래스가 부모 클래스를 대체할 수 있어야 한다는 것은?", a: ["LSP", "리스코프 치환 원칙"], h: "Liskov Substitution Principle" },
-                { type: "S", q: "UML 관계 중 전체 객체가 소멸하면 부분 객체도 소멸하는 강한 포함 관계는?", a: ["합성 관계"], h: "Composition" },
-                { type: "S", q: "생성 패턴 중 하나로, 복잡한 객체의 생성과 표현을 분리하는 패턴은?", a: ["빌더", "Builder"], h: "동일한 생성 절차에서 다른 표현 결과 생성" },
-                { type: "S", q: "서브클래스에서 객체 생성을 결정하도록 하는 생성 패턴은?", a: ["팩토리 메서드"], h: "Factory Method" },
-                { type: "S", q: "가장 엄격한 소프트웨어 요구사항 검토 기법은?", a: ["인스펙션"], h: "Inspection" },
-                { type: "S", q: "UI 설계 원칙 중 사용자가 원하는 목적을 정확하게 달성하는 성질은?", a: ["유효성"], h: "Effectiveness" },
-                { type: "S", q: "동일한 시간대에 실행되는 모듈 요소들의 응집도는?", a: ["시간적 응집도"], h: "Temporal Cohesion" },
-                { type: "S", q: "동일한 자료 구조를 참조하는 모듈 간의 결합도는?", a: ["스탬프 결합도"], h: "Stamp Coupling" },
-                { type: "S", q: "복잡한 서브시스템에 단순한 접점을 제공하는 디자인 패턴은?", a: ["파사드", "Facade"], h: "건물의 정면이라는 뜻" },
-                { type: "S", q: "입력-처리-출력을 시각적으로 표현하는 분석 도구는?", a: ["HIPO"], h: "Hierarchy Input Process Output" },
-                { type: "S", q: "객체의 상태 변화를 관찰하여 통지하는 패턴은?", a: ["옵저버"], h: "Observer" },
-                { type: "S", q: "하향식 통합 테스트에서 사용하는 가상 모듈은?", a: ["스텁", "Stub"], h: "하상스(하향식-상향식-스텁)" },
-                { type: "S", q: "데이터베이스 설계 단계 중 스키마 평가와 트랜잭션 모델링이 일어나는 단계는?", a: ["논리적 설계"], h: "개-논-물" },
-                { type: "S", q: "IP 계층에서 트래픽을 암호화하여 보안을 강화하는 규격은?", a: ["IPSec"], h: "IP Security" },
-                { type: "S", q: "메시지 기반 분산 앱 간 통신 미들웨어는?", a: ["MOM"], h: "Message Oriented Middleware" },
-                { type: "S", q: "결합도가 가장 낮은(좋은) 단계는?", a: ["자료 결합도"], h: "Data Coupling" },
-                { type: "S", q: "데이터 흐름도(DFD)의 구성 요소 중 처리 과정을 나타내는 기호는?", a: ["프로세스", "Process", "원"], h: "동그라미 기호" },
-                { type: "S", q: "사용자 시점에서 시스템 기능을 기술하는 UML 도구는?", a: ["유스케이스"], h: "Use Case" },
-                { type: "S", q: "모듈 내 요소들이 순차적으로 출력을 입력으로 사용하는 응집도는?", a: ["순차적 응집도"], h: "Sequential Cohesion" },
-                { type: "S", q: "GoF 디자인 패턴 중 '구조 패턴'에 해당하지 않는 것은?", a: ["빌더", "Builder", "싱글톤"], h: "빌더, 싱글톤은 생성 패턴입니다." },
-                { type: "S", q: "스크럼에서 매일 진행하는 15분 내외의 짧은 회의는?", a: ["데일리 스크럼"], h: "Daily Scrum" },
-                { type: "S", q: "소프트웨어 개발 단계 중 오류를 발견하고 수정하는 단계는?", a: ["테스트"], h: "Test" },
-                { type: "S", q: "두 모듈이 동일한 외부 환경을 참조하는 결합도는?", a: ["외부 결합도"], h: "External Coupling" },
-                { type: "S", q: "하드웨어와 소프트웨어를 포함한 시스템 전체의 구조는?", a: ["아키텍처"], h: "Architecture" },
-                { type: "S", q: "정적인 구조를 표현하는 대표적인 UML 다이어그램은?", a: ["클래스 다이어그램"], h: "Class Diagram" },
-                { type: "S", q: "요구사항 검토 방법 중 팀이 모여 소스를 훑어보는 비공식 기법은?", a: ["워크스루"], h: "Walkthrough" },
-                { type: "S", q: "시스템의 성능 향상을 위해 중복 데이터를 허용하는 기법은?", a: ["반정규화"], h: "Denormalization" }
-                // (PDF 60문제 중 핵심 30개 수록, 나머지 30개도 동일 양식으로 추가 가능)
+                { q: "소프트웨어 품질 향상을 위해 기존 시스템을 분석하여 재구성하는 공학은?", a: ["재공학"], h: "분석->재구성->역공학->이관" },
+                { q: "애자일 선언문 중 계획에 따르기보다 무엇에 대응하는 것을 강조하는가?", a: ["변화"], h: "Responding to change" },
+                { q: "XP의 5가지 가치 중 하나로, 개발자가 자신의 코드를 정직하게 수정하는 것은?", a: ["용기"], h: "Courage" },
+                { q: "객체지향 설계 원칙 중 자식 클래스가 부모 클래스를 대체할 수 있어야 한다는 것은?", a: ["LSP", "리스코프 치환 원칙"], h: "Liskov Substitution Principle" },
+                { q: "UML 관계 중 전체 객체가 소멸하면 부분 객체도 소멸하는 강한 포함 관계는?", a: ["합성 관계"], h: "Composition" },
+                { q: "생성 패턴 중 하나로, 복잡한 객체의 생성과 표현을 분리하는 패턴은?", a: ["빌더", "Builder"], h: "동일한 생성 절차에서 다른 표현 결과 생성" },
+                { q: "서브클래스에서 객체 생성을 결정하도록 하는 생성 패턴은?", a: ["팩토리 메서드"], h: "Factory Method" },
+                { q: "가장 엄격한 소프트웨어 요구사항 검토 기법은?", a: ["인스펙션"], h: "Inspection" },
+                { q: "UI 설계 원칙 중 사용자가 원하는 목적을 정확하게 달성하는 성질은?", a: ["유효성"], h: "Effectiveness" },
+                { q: "동일한 시간대에 실행되는 모듈 요소들의 응집도는?", a: ["시간적 응집도"], h: "Temporal Cohesion" },
+                { q: "동일한 자료 구조를 참조하는 모듈 간의 결합도는?", a: ["스탬프 결합도"], h: "Stamp Coupling" },
+                { q: "복잡한 서브시스템에 단순한 접점을 제공하는 디자인 패턴은?", a: ["파사드", "Facade"], h: "건물의 정면이라는 뜻" },
+                { q: "입력-처리-출력을 시각적으로 표현하는 분석 도구는?", a: ["HIPO"], h: "Hierarchy Input Process Output" },
+                { q: "객체의 상태 변화를 관찰하여 통지하는 패턴은?", a: ["옵저버"], h: "Observer" },
+                { q: "하향식 통합 테스트에서 사용하는 가상 모듈은?", a: ["스텁", "Stub"], h: "하상스(하향식-상향식-스텁)" },
+                { q: "데이터베이스 설계 단계 중 스키마 평가와 트랜잭션 모델링이 일어나는 단계는?", a: ["논리적 설계"], h: "개-논-물" },
+                { q: "IP 계층에서 트래픽을 암호화하여 보안을 강화하는 규격은?", a: ["IPSec"], h: "IP Security" },
+                { q: "메시지 기반 분산 앱 간 통신 미들웨어는?", a: ["MOM"], h: "Message Oriented Middleware" },
+                { q: "결합도가 가장 낮은(좋은) 단계는?", a: ["자료 결합도"], h: "Data Coupling" },
+                { q: "데이터 흐름도(DFD)의 구성 요소 중 처리 과정을 나타내는 기호는?", a: ["프로세스", "Process", "원"], h: "동그라미 기호" },
+                { q: "사용자 시점에서 시스템 기능을 기술하는 UML 도구는?", a: ["유스케이스"], h: "Use Case" },
+                { q: "모듈 내 요소들이 순차적으로 출력을 입력으로 사용하는 응집도는?", a: ["순차적 응집도"], h: "Sequential Cohesion" },
+                { q: "GoF 디자인 패턴 중 '구조 패턴'에 해당하지 않는 것은?", a: ["빌더", "Builder", "싱글톤"], h: "빌더, 싱글톤은 생성 패턴입니다." },
+                { q: "스크럼에서 매일 진행하는 15분 내외의 짧은 회의는?", a: ["데일리 스크럼"], h: "Daily Scrum" },
+                { q: "소프트웨어 개발 단계 중 오류를 발견하고 수정하는 단계는?", a: ["테스트"], h: "Test" },
+                { q: "두 모듈이 동일한 외부 환경을 참조하는 결합도는?", a: ["외부 결합도"], h: "External Coupling" },
+                { q: "하드웨어와 소프트웨어를 포함한 시스템 전체의 구조는?", a: ["아키텍처"], h: "Architecture" },
+                { q: "정적인 구조를 표현하는 대표적인 UML 다이어그램은?", a: ["클래스 다이어그램"], h: "Class Diagram" },
+                { q: "요구사항 검토 방법 중 팀이 모여 소스를 훑어보는 비공식 기법은?", a: ["워크스루"], h: "Walkthrough" },
+                { q: "시스템의 성능 향상을 위해 중복 데이터를 허용하는 기법은?", a: ["반정규화"], h: "Denormalization" }
             ],
             2: [], 3: [], 4: [], 5: []
         };
@@ -130,7 +140,7 @@
         let curUnit = 1;
         let curIdx = 0;
         let isWrongMode = false;
-        let wrongList = JSON.parse(localStorage.getItem('wrong_list')) || [];
+        let scoreMap = {}; // 최초 응답 저장용
 
         function renderMenu() {
             const list = document.getElementById('unit-buttons');
@@ -145,9 +155,9 @@
                         <div class="progress-bar" style="margin-top:8px;"><div class="p-inner" style="width:${percent}%"></div></div>
                     </div>`;
             }
-            updateWrongCount();
+            const wrongList = JSON.parse(localStorage.getItem('wrong_list') || "[]");
+            document.getElementById('wrong-count').innerText = `${wrongList.length}개의 항목`;
             
-            // 영구 저장된 이어풀기 정보 로드
             const lastU = localStorage.getItem('last_unit');
             const lastI = localStorage.getItem('last_idx');
             const info = document.getElementById('resume-info');
@@ -170,76 +180,88 @@
         function initQuiz() {
             document.getElementById('view-menu').classList.add('hidden');
             document.getElementById('view-quiz').classList.remove('hidden');
-            document.getElementById('display-unit').innerText = isWrongMode ? "복습 모드" : `${curUnit}단원 분석 중`;
             loadQuestion();
         }
 
         function loadQuestion() {
-            const data = isWrongMode ? wrongList : quizData[curUnit];
+            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
             const q = data[curIdx];
+            
+            document.getElementById('display-unit').innerText = isWrongMode ? "오답 복습" : `${curUnit}단원`;
+            document.getElementById('p-text').innerText = `${curIdx + 1} / ${data.length}`;
             document.getElementById('q-text').innerText = q.q;
             document.getElementById('user-ans').value = '';
+            document.getElementById('status-display').innerText = '';
             document.getElementById('hint-box').classList.add('hidden');
-            document.getElementById('btn-next').style.display = 'none';
-            document.getElementById('btn-check').style.display = 'block';
-            document.getElementById('correct-display').classList.add('hidden');
+            document.getElementById('row-next').classList.add('hidden');
+            document.getElementById('row-check').classList.remove('hidden');
             
-            if(q.type === "S") {
-                document.getElementById('area-subjective').classList.remove('hidden');
-                document.getElementById('area-objective').classList.add('hidden');
-            } else {
-                document.getElementById('area-subjective').classList.add('hidden');
-                document.getElementById('area-objective').classList.remove('hidden');
-                const optDiv = document.getElementById('area-objective');
-                optDiv.innerHTML = '';
-                q.o.forEach((txt, i) => {
-                    optDiv.innerHTML += `<button class="opt-btn" onclick="checkObjective(${i}, this)">${txt}</button>`;
-                });
-            }
             updateP();
+            
+            // 0.1초 뒤 입력창 포커스 (키보드 자동 활성화)
+            setTimeout(() => {
+                const input = document.getElementById('user-ans');
+                input.focus();
+            }, 100);
         }
 
         function checkSubjective() {
             const user = document.getElementById('user-ans').value.trim().toLowerCase();
-            const q = isWrongMode ? wrongList[curIdx] : quizData[curUnit][curIdx];
-            const correct = q.a.map(v => v.toLowerCase());
+            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
+            const q = data[curIdx];
+            const correctList = q.a.map(v => v.toLowerCase());
+            const status = document.getElementById('status-display');
             
-            if(!correct.includes(user)) {
-                saveWrong(q);
-                document.getElementById('correct-display').innerText = `정답: ${q.a[0]}`;
-                document.getElementById('correct-display').classList.remove('hidden');
+            // 최초 응답 점수 기록
+            if(!isWrongMode && scoreMap[`${curUnit}_${curIdx}`] === undefined) {
+                scoreMap[`${curUnit}_${curIdx}`] = correctList.includes(user);
             }
-            endStep();
+
+            if(correctList.includes(user)) {
+                status.innerText = "✓ 확인됨";
+                status.className = "status-msg is-correct";
+            } else {
+                status.innerText = `✕ 미일치 (정답: ${q.a[0]})`;
+                status.className = "status-msg is-wrong";
+                saveWrong(q);
+            }
+
+            document.getElementById('row-check').classList.add('hidden');
+            document.getElementById('row-next').classList.remove('hidden');
         }
 
         function saveWrong(q) {
-            if(!wrongList.some(item => item.q === q.q)) {
-                wrongList.push(q);
-                localStorage.setItem('wrong_list', JSON.stringify(wrongList));
-                updateWrongCount();
-            }
-        }
-
-        function endStep() {
-            document.getElementById('btn-check').style.display = 'none';
-            document.getElementById('btn-next').style.display = 'block';
-            if(!isWrongMode) {
-                // 실시간으로 영구 저장 (앱 종료 대비)
-                localStorage.setItem(`prog_${curUnit}`, curIdx + 1);
-                localStorage.setItem('last_unit', curUnit);
-                localStorage.setItem('last_idx', curIdx);
+            let list = JSON.parse(localStorage.getItem('wrong_list') || "[]");
+            if(!list.some(item => item.q === q.q)) {
+                list.push(q);
+                localStorage.setItem('wrong_list', JSON.stringify(list));
             }
         }
 
         function nextStep() {
-            const data = isWrongMode ? wrongList : quizData[curUnit];
-            curIdx++;
-            if(curIdx < data.length) {
-                if(!isWrongMode) localStorage.setItem('last_idx', curIdx);
+            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
+            if(curIdx < data.length - 1) {
+                curIdx++;
+                if(!isWrongMode) {
+                    localStorage.setItem(`prog_${curUnit}`, curIdx);
+                    localStorage.setItem('last_unit', curUnit);
+                    localStorage.setItem('last_idx', curIdx);
+                }
                 loadQuestion();
             } else {
-                alert("완료되었습니다.");
+                if(!isWrongMode) {
+                    const totalScore = Object.keys(scoreMap).filter(k => k.startsWith(`${curUnit}_`) && scoreMap[k]).length;
+                    alert(`${curUnit}단원 완료\n최초 정답률: ${Math.round(totalScore/data.length*100)}%`);
+                    localStorage.setItem(`prog_${curUnit}`, data.length);
+                }
                 goHome();
+            }
+        }
+
+        function prevStep() {
+            if(curIdx > 0) {
+                curIdx--;
+                loadQuestion();
             }
         }
 
@@ -251,33 +273,30 @@
                 curIdx = parseInt(i);
                 isWrongMode = false;
                 initQuiz();
-            } else {
-                alert("기록이 없습니다.");
-            }
+            } else { alert("기록이 없습니다."); }
         }
 
         function startWrongAnswers() {
-            if(wrongList.length === 0) return alert("기록이 없습니다.");
+            const list = JSON.parse(localStorage.getItem('wrong_list') || "[]");
+            if(list.length === 0) return alert("기록이 없습니다.");
             isWrongMode = true;
             curIdx = 0;
             initQuiz();
         }
 
         function toggleHint() {
-            const data = isWrongMode ? wrongList : quizData[curUnit];
+            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
             const h = document.getElementById('hint-box');
             h.innerText = data[curIdx].h;
             h.classList.toggle('hidden');
+            // 힌트가 열려도 입력창 포커스 유지
+            document.getElementById('user-ans').focus();
         }
 
         function updateP() {
-            const data = isWrongMode ? wrongList : quizData[curUnit];
+            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
             const p = (curIdx / data.length) * 100;
             document.getElementById('p-bar').style.width = p + '%';
-        }
-
-        function updateWrongCount() {
-            document.getElementById('wrong-count').innerText = `${wrongList.length}개의 항목`;
         }
 
         function goHome() { location.reload(); }
