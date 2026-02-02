@@ -2,236 +2,86 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Note</title>
-   <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="정처기노트">
-
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2232/2232688.png">
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2232/2232688.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>정처기 1단원 뽀개기</title>
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2232/2232688.png">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2232/2232688.png">
     <style>
-        :root { --bg: #ffffff; --text: #202124; --border: #ebebeb; }
-    <style>
-        :root { --bg: #ffffff; --text: #202124; --border: #ebebeb; }
-        body { font-family: 'Malgun Gothic', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 50px; }
-        .container { width: 100%; max-width: 500px; padding: 20px; }
-        .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8rem; color: #5f6368; }
-        #categoryFilter { border: none; color: #9aa0a6; outline: none; background: none; cursor: pointer; }
-        .question-box { margin-bottom: 25px; line-height: 1.6; font-weight: 500; font-size: 1.05rem; min-height: 100px; }
-        .options { display: grid; gap: 8px; }
-        .options button { cursor: pointer; border: 1px solid var(--border); background: white; padding: 12px; border-radius: 6px; text-align: left; font-size: 0.95rem; }
-        .options button:hover { background: #f8f9fa; }
-        .input-box { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; outline: none; }
-        .btn-group { display: flex; gap: 10px; margin-top: 25px; opacity: 0.2; transition: 0.3s; }
-        .btn-group:hover { opacity: 1; }
-        .btn-primary { background: #80868b; color: white; border: none; padding: 10px; border-radius: 4px; flex: 1; cursor: pointer; }
-        .btn-hint { background: none; color: #80868b; border: 1px solid #80868b; width: 70px; border-radius: 4px; cursor: pointer; }
-        .result-box { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; border: 1px solid #eee; }
-        .correct { border-left: 5px solid #34a853; }
-        .wrong { border-left: 5px solid #ea4335; }
-        .explanation { font-size: 0.85rem; margin-top: 8px; color: #70757a; background: #f9f9f9; padding: 10px; }
-        #summary-area { display: none; text-align: center; }
-        .wrong-item { text-align: left; font-size: 0.8rem; color: #d93025; margin-top: 5px; }
+        :root { --bg: #f8f9fa; --card: #ffffff; --text: #212529; --primary: #4a90e2; --border: #dee2e6; }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; font-size: 18px; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .quiz-card { background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .question { font-size: 1.3rem; font-weight: bold; margin-bottom: 20px; word-break: keep-all; }
+        .option-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; background: #fff; border: 2px solid var(--border); border-radius: 10px; text-align: left; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+        .option-btn:hover { border-color: var(--primary); }
+        .progress { margin-bottom: 10px; font-size: 0.9rem; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header-info">
-            <div id="score-text">Score: 0/0</div>
-            <select id="categoryFilter" onchange="changeCategory()">
-                <option value="전체">All Sections</option>
-                <option value="소프트웨어">Section 01</option>
-                <option value="데이터베이스">Section 02</option>
-            </select>
-        </div>
-
-        <div id="quiz-area">
-            <div class="question-box" id="q-text">데이터를 불러오는 중...</div>
-            <div id="ans-area"></div>
-            <div id="hint-text" style="display:none; font-size:0.8rem; color:gray; margin-top:10px; padding:10px; border:1px dashed #ccc;"></div>
-            <div class="btn-group">
-                <button class="btn-hint" onclick="showHint()">Hint</button>
-                <button class="btn-primary" id="confirm-btn" onclick="checkInputAnswer()" style="display:none;">Confirm</button>
+        <div class="progress" id="progress">문제 1 / 20</div>
+        <div id="quiz-app">
+            <div class="quiz-card">
+                <div id="question" class="question">로딩 중...</div>
+                <div id="options"></div>
             </div>
-            <div id="result-box" class="result-box">
-                <div id="res-status" style="font-weight:bold;"></div>
-                <div id="res-exp" class="explanation"></div>
-                <button id="next-btn-text" onclick="goNext()" style="width:100%; margin-top:10px; padding:8px; cursor:pointer; border:none; background:#eee;">Next</button>
-            </div>
-        </div>
-
-        <div id="summary-area">
-            <h2>Result</h2>
-            <div id="final-stat" style="font-size:1.5rem; margin:20px 0;"></div>
-            <button onclick="restart()" style="padding:10px 20px; cursor:pointer;">Restart</button>
-            <div id="wrong-list" style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;"></div>
+            <div id="feedback" style="margin-top:15px; font-weight:bold; text-align:center; height: 24px;"></div>
         </div>
     </div>
 
     <script>
         const quizData = [
-            // --- SECTION 01: 소프트웨어 (1~30) ---
-            { id: 1, cat: "소프트웨어", type: "choice", q: "SDLC 모형 중 위험 분석 기능을 추가하여 반복 개발하는 모형은?", opts: ["폭포수", "프로토타입", "나선형", "애자일"], ans: "나선형", hint: "위험 관리!", exp: "나선형 모형은 위험 분석 단계가 특징입니다." },
-            { id: 2, cat: "소프트웨어", type: "choice", q: "애자일 가치가 아닌 것은?", opts: ["상호작용", "소프트웨어", "고객협력", "계획준수"], ans: "계획준수", hint: "변화 대응!", exp: "애자일은 계획준수보다 변화대응을 중시합니다." },
-            { id: 3, cat: "소프트웨어", type: "choice", q: "XP의 핵심 가치가 아닌 것은?", opts: ["의사소통", "피드백", "정교함", "용기"], ans: "정교함", hint: "단순성, 존중", exp: "XP 가치: 의사소통, 단순성, 피드백, 용기, 존중" },
-            { id: 4, cat: "소프트웨어", type: "input", q: "XP에서 누구나 코드를 수정할 수 있는 원칙은?", ans: "공동 소유", hint: "Collective Ownership", exp: "공동 소유는 팀원 누구나 코드 수정이 가능함을 뜻합니다." },
-            { id: 5, cat: "소프트웨어", type: "choice", q: "Scrum의 짧은 개발 주기는?", opts: ["백로그", "스프린트", "회고", "데일리"], ans: "스프린트", hint: "단거리 달리기", exp: "스프린트는 2~4주의 반복 주기입니다." },
-            { id: 6, cat: "소프트웨어", type: "input", q: "시스템 전체 구조를 정의하는 설계는?", ans: "아키텍처 설계", hint: "Architecture", exp: "상위 설계에서 아키텍처를 결정합니다." },
-            { id: 7, cat: "소프트웨어", type: "choice", q: "UI 원칙 중 목표 달성을 정확하게 돕는 것은?", opts: ["직관성", "유효성", "학습성", "유연성"], ans: "유효성", hint: "정확도와 완결성", exp: "유효성은 사용자의 목적 달성 능력을 의미합니다." },
-            { id: 8, cat: "소프트웨어", type: "input", q: "UML 구성 요소는 사물, 관계, 그리고?", ans: "다이어그램", hint: "도표", exp: "사물, 관계, 다이어그램이 3요소입니다." },
-            { id: 9, cat: "소프트웨어", type: "choice", q: "동적 다이어그램인 것은?", opts: ["클래스", "패키지", "시퀀스", "컴포넌트"], ans: "시퀀스", hint: "시간 흐름", exp: "시퀀스 다이어그램은 메시지 흐름을 보여줍니다." },
-            { id: 10, cat: "소프트웨어", type: "choice", q: "GoF 패턴 중 '구조 패턴'에 속하는 것은?", opts: ["Singleton", "Builder", "Adapter", "Prototype"], ans: "Adapter", hint: "변환기 역할을 하는 패턴.", exp: "Adapter는 인터페이스를 맞춰주는 구조 패턴입니다." },
-            { id: 11, cat: "소프트웨어", type: "input", q: "복잡한 서브시스템 앞단에 단순한 인터페이스를 두는 패턴은?", ans: "Facade", hint: "정면", exp: "Facade 패턴은 복잡함을 감춰줍니다." },
-            { id: 12, cat: "소프트웨어", type: "choice", q: "모듈 독립성을 높이려면?", opts: ["응집도↑결합도↑", "응집도↓결합도↓", "응집도↑결합도↓", "응집도↓결합도↑"], ans: "응집도↑결합도↓", hint: "내부는 끈끈하게", exp: "강한 응집도와 약한 결합도가 베스트입니다." },
-            { id: 13, cat: "소프트웨어", type: "choice", q: "결합도가 가장 강한 것(나쁜 것)은?", opts: ["내용", "공통", "외부", "제어"], ans: "내용", hint: "내-공-외-제-스-자", exp: "내용 결합도가 가장 독립성이 낮습니다." },
-            { id: 14, cat: "소프트웨어", type: "input", q: "하나의 기능을 수행하는 응집도는?", ans: "기능적 응집도", hint: "가장 높은 응집도", exp: "기능적 응집도가 독립성이 가장 높습니다." },
-            { id: 15, cat: "소프트웨어", type: "choice", q: "하향식 통합 시 가짜 모듈은?", opts: ["드라이버", "스텁", "클러스터", "에이전트"], ans: "스텁", hint: "아래에 끼우는 것", exp: "하향식은 스텁, 상향식은 드라이버를 씁니다." },
-            { id: 16, cat: "소프트웨어", type: "input", q: "자식이 부모를 대체할 수 있어야 하는 원칙?", ans: "리스코프 치환 원칙", hint: "LSP", exp: "상속의 일관성을 강조하는 원칙입니다." },
-            { id: 17, cat: "소프트웨어", type: "choice", q: "블랙박스 테스트 기법인 것은?", opts: ["구문", "경로", "경계값 분석", "조건"], ans: "경계값 분석", hint: "명세 기반", exp: "경계값 분석은 대표적 블랙박스 기법입니다." },
-            { id: 18, cat: "소프트웨어", type: "input", q: "내부 구조를 보며 테스트하는 기법은?", ans: "화이트박스 테스트", hint: "투명한 상자", exp: "화이트박스는 로직과 코드를 검사합니다." },
-            { id: 19, cat: "소프트웨어", type: "choice", q: "변경 후 부작용 확인을 위한 테스트는?", opts: ["회귀", "회복", "강도", "성능"], ans: "회귀", hint: "Regression", exp: "회귀 테스트는 부작용 유무를 체크합니다." },
-            { id: 20, cat: "소프트웨어", type: "input", q: "긴급 수정을 위한 배포판?", ans: "패치", hint: "Patch", exp: "패치는 소규모 업데이트/수정용입니다." },
-            { id: 21, cat: "소프트웨어", type: "choice", q: "UML에서 실선으로 연결된 관계는?", opts: ["일반화", "연관", "의존", "실체화"], ans: "연관", hint: "기본 연결", exp: "연관 관계는 클래스 사이의 연결입니다." },
-            { id: 22, cat: "소프트웨어", type: "input", q: "속성-값 쌍의 텍스트 포맷?", ans: "JSON", hint: "JS Object Notation", exp: "JSON은 가벼운 데이터 교환용입니다." },
-            { id: 23, cat: "소프트웨어", type: "choice", q: "IP 계층 보안 표준은?", opts: ["SSL", "IPSec", "HTTPS", "TLS"], ans: "IPSec", hint: "IP Security", exp: "IPSec은 네트워크 계층의 보안 표준입니다." },
-            { id: 24, cat: "소프트웨어", type: "input", q: "상태 변화 통지 패턴은?", ans: "Observer", hint: "관찰자", exp: "옵저버 패턴은 변화를 전파합니다." },
-            { id: 25, cat: "소프트웨어", type: "choice", q: "기능 유지하며 코드 개선?", opts: ["Pair", "Refactoring", "TDD", "Scrum"], ans: "Refactoring", hint: "리팩토링", exp: "리팩토링은 코드 가독성을 높입니다." },
-            { id: 26, cat: "소프트웨어", type: "input", q: "제어 인자를 전달하는 결합도는?", ans: "제어 결합도", hint: "Control Coupling", exp: "제어 결합도는 흐름을 제어합니다." },
-            { id: 27, cat: "소프트웨어", type: "choice", q: "상호작용 흐름을 보여주는 다이어그램은?", opts: ["클래스", "상태", "시퀀스", "배치"], ans: "시퀀스", hint: "동적 구조", exp: "시퀀스 다이어그램은 상호작용을 나타냅니다." },
-            { id: 28, cat: "소프트웨어", type: "input", q: "테스트 명세를 작성한 문서는?", ans: "테스트 케이스", hint: "Test Case", exp: "테스트 케이스는 수행의 기준입니다." },
-            { id: 29, cat: "소프트웨어", type: "choice", q: "비즈니스 로직 처리 미들웨어?", opts: ["WAS", "DB", "RPC", "ORB"], ans: "WAS", hint: "Web App Server", exp: "WAS는 동적 콘텐츠를 처리합니다." },
-            { id: 30, cat: "소프트웨어", type: "input", q: "시제품으로 검증하는 모형?", ans: "프로토타입 모형", hint: "Prototype", exp: "프로토타입은 요구사항 파악에 유리합니다." },
-
-            // --- SECTION 02: 데이터베이스 (101~130) ---
-            { id: 101, cat: "데이터베이스", type: "choice", q: "트랜잭션의 성질 중 'All or Nothing'은?", opts: ["원자성", "일관성", "격리성", "영속성"], ans: "원자성", hint: "Atomicity", exp: "원자성은 완전한 수행 혹은 전무를 보장합니다." },
-            { id: 102, cat: "데이터베이스", type: "choice", q: "기본키가 가져야 할 필수 성질은?", opts: ["유일성", "최소성", "둘 다", "없음"], ans: "둘 다", hint: "식별자의 조건", exp: "기본키는 튜플을 구별하는 유일성과 최소성이 필수입니다." },
-            { id: 103, cat: "데이터베이스", type: "input", q: "기본키는 Null이 될 수 없다는 무결성은?", ans: "개체 무결성", hint: "Entity Integrity", exp: "개체 무결성은 기본키의 존재를 보장합니다." },
-            { id: 104, cat: "데이터베이스", type: "choice", q: "1정규형(1NF)의 핵심 조건은?", opts: ["원자값", "부분함수제거", "이행함수제거", "결정자"], ans: "원자값", hint: "Atomic Value", exp: "1NF는 모든 속성이 단일한 원자값이어야 합니다." },
-            { id: 105, cat: "데이터베이스", type: "input", q: "2NF에서 제거해야 하는 종속성은?", ans: "부분 함수 종속", hint: "키의 일부에만 종속", exp: "2NF는 완전 함수 종속을 지향합니다." },
-            { id: 106, cat: "데이터베이스", type: "choice", q: "ERD에서 개체를 나타내는 도형은?", opts: ["사각형", "타원", "마름모", "선"], ans: "사각형", hint: "Entity", exp: "사각형은 엔티티(개체)를 상징합니다." },
-            { id: 107, cat: "데이터베이스", type: "choice", q: "Project 연산의 기호는?", opts: ["σ", "π", "⋈", "÷"], ans: "π", hint: "수직 추출", exp: "파이(π)는 열을 추출하는 Project입니다." },
-            { id: 108, cat: "데이터베이스", type: "input", q: "이행적 함수 종속을 제거하는 단계는?", ans: "3NF", hint: "A→B, B→C 차단", exp: "3NF는 비주요 속성 간의 종속을 없앱니다." },
-            { id: 109, cat: "데이터베이스", type: "choice", q: "조회 성능 향상을 위해 의도적 중복을 허용하는 것은?", opts: ["정규화", "반정규화", "인덱싱", "튜닝"], ans: "반정규화", hint: "역정규화", exp: "반정규화는 데이터 조회를 최적화합니다." },
-            { id: 110, cat: "데이터베이스", type: "input", q: "CREATE, DROP 등 구조 정의 SQL 언어는?", ans: "DDL", hint: "Definition", exp: "DDL은 스키마 구조를 관리합니다." },
-            { id: 111, cat: "데이터베이스", type: "choice", q: "DB 로그를 이용해 장애 전으로 복구하는 연산은?", opts: ["REDO", "UNDO", "COMMIT", "ROLLBACK"], ans: "REDO", hint: "다시 하기", exp: "REDO는 완료된 작업을 재반영합니다." },
-            { id: 112, cat: "데이터베이스", type: "input", q: "사용자 관점에서 본 논리적 DB 구조는?", ans: "외부 스키마", hint: "External", exp: "외부 스키마는 개별 사용자의 뷰입니다." },
-            { id: 113, cat: "데이터베이스", type: "choice", q: "릴레이션의 행(Row)의 개수는?", opts: ["차수", "카디널리티", "도메인", "속성"], ans: "카디널리티", hint: "Cardinality", exp: "카디널리티는 튜플의 총 개수입니다." },
-            { id: 114, cat: "데이터베이스", type: "input", q: "릴레이션의 열(Column)의 개수는?", ans: "차수", hint: "Degree", exp: "차수는 속성의 개수를 의미합니다." },
-            { id: 115, cat: "데이터베이스", type: "choice", q: "물리적 공간을 차지하지 않는 가상 테이블은?", opts: ["뷰", "인덱스", "클러스터", "스키마"], ans: "뷰", hint: "View", exp: "뷰는 쿼리만 저장되는 가상 테이블입니다." },
-            { id: 116, cat: "데이터베이스", type: "input", q: "SELECT 시 중복을 제거하는 키워드는?", ans: "DISTINCT", hint: "뚜렷한", exp: "DISTINCT는 유일한 행만 결과로 냅니다." },
-            { id: 117, cat: "데이터베이스", type: "choice", q: "모든 결정자가 후보키여야 하는 단계는?", opts: ["3NF", "BCNF", "4NF", "5NF"], ans: "BCNF", hint: "Boyce-Codd", exp: "BCNF는 강한 제3정규형이라고도 합니다." },
-            { id: 118, cat: "데이터베이스", type: "input", q: "권한을 부여하는 명령어는?", ans: "GRANT", hint: "주다", exp: "GRANT는 사용자에게 권한을 줍니다." },
-            { id: 119, cat: "데이터베이스", type: "choice", q: "참조 무결성 위배 시 부모 삭제 시 자식도 삭제하는 옵션은?", opts: ["RESTRICT", "CASCADE", "SET NULL", "DEFAULT"], ans: "CASCADE", hint: "폭포수처럼", exp: "CASCADE는 연쇄 삭제를 유발합니다." },
-            { id: 120, cat: "데이터베이스", type: "input", q: "트랜잭션 실행 중 장애 시 취소하는 연산은?", ans: "UNDO", hint: "되돌리기", exp: "UNDO는 실패한 작업을 철회합니다." },
-            { id: 121, cat: "데이터베이스", type: "choice", q: "DB 특징 중 데이터를 동시 사용하는 것은?", opts: ["실시간 접근성", "계속적 변화", "동시 공유", "내용 참조"], ans: "동시 공유", hint: "Sharing", exp: "동시 공유는 다수 사용자의 동시 접근을 허용합니다." },
-            { id: 122, cat: "데이터베이스", type: "input", q: "물리적 저장 장치 관점의 스키마는?", ans: "내부 스키마", hint: "Internal", exp: "내부 스키마는 실제 저장 방식을 정의합니다." },
-            { id: 123, cat: "데이터베이스", type: "choice", q: "데이터 조작어(DML)가 아닌 것은?", opts: ["SELECT", "UPDATE", "INSERT", "CREATE"], ans: "CREATE", hint: "CREATE는 DDL입니다.", exp: "DML은 데이터의 CRUD를 담당합니다." },
-            { id: 124, cat: "데이터베이스", type: "input", q: "한 속성이 가질 수 있는 원자값의 범위는?", ans: "도메인", hint: "Domain", exp: "도메인은 속성의 값 범위를 규정합니다." },
-            { id: 125, cat: "데이터베이스", type: "choice", q: "SQL에서 결과 정렬 시 사용하는 구문은?", opts: ["GROUP BY", "ORDER BY", "HAVING", "DISTINCT"], ans: "ORDER BY", hint: "순서대로", exp: "ORDER BY는 오름/내림차순 정렬을 수행합니다." },
-            { id: 126, cat: "데이터베이스", type: "input", q: "분산 DB 중 물리적으로 몰라도 되는 특성은?", ans: "위치 투명성", hint: "Location Transparency", exp: "위치는 데이터의 실제 장소를 숨겨줍니다." },
-            { id: 127, cat: "데이터베이스", type: "choice", q: "데이터 모델의 3요소가 아닌 것은?", opts: ["구조", "연산", "제약조건", "속성"], ans: "속성", hint: "구-연-제", exp: "모델 3요소는 구조, 연산, 제약조건입니다." },
-            { id: 128, cat: "데이터베이스", type: "input", q: "기본키는 아니지만 튜플 식별 가능한 키는?", ans: "후보키", hint: "Candidate Key", exp: "후보키 중 하나가 기본키가 됩니다." },
-            { id: 129, cat: "데이터베이스", type: "choice", q: "정규화의 목적으로 옳지 않은 것은?", opts: ["중복 최소화", "이상 현상 제거", "저장 공간 절약", "조회 속도 항상 극대화"], ans: "조회 속도 항상 극대화", hint: "조회는 정규화하면 느려질 수 있음", exp: "정규화는 무결성을 높이지만 조인은 늘어납니다." },
-            { id: 130, cat: "데이터베이스", type: "input", q: "외래키와 관련된 무결성 원칙은?", ans: "참조 무결성", hint: "Referential Integrity", exp: "참조 무결성은 릴레이션 간 관계를 유지합니다." }
+            { q: "소프트웨어의 독립성을 높이기 위해 가장 좋은 상태는?", a: ["결합도 높음, 응집도 낮음", "결합도 낮음, 응집도 높음", "둘 다 높음", "둘 다 낮음"], correct: 1 },
+            { q: "디자인 패턴 중 '생성 패턴'에 속하는 것은?", a: ["Adapter", "Proxy", "Singleton", "Observer"], correct: 2 },
+            { q: "UI 설계 원칙 중 누구나 쉽게 이해하고 사용할 수 있어야 한다는 원칙은?", a: ["직관성", "유효성", "학습성", "유연성"], correct: 0 },
+            { q: "람바(Rumbaugh)의 객체 지향 분석에서 상태 다이어그램을 이용하는 모델링은?", a: ["객체 모델링", "동적 모델링", "기능 모델링", "데이터 모델링"], correct: 1 },
+            { q: "애자일(Agile) 개발 방법론의 핵심 가치가 아닌 것은?", a: ["개인과 상호작용", "실행되는 소프트웨어", "고객과의 협력", "철저한 공정 및 도구"], correct: 3 },
+            { q: "DBMS의 필수 기능 3가지가 아닌 것은?", a: ["정의 기능", "조작 기능", "제어 기능", "삭제 기능"], correct: 3 },
+            { q: "요구사항 분석 기법 중 하나인 '데이터 흐름도(DFD)'의 구성요소가 아닌 것은?", a: ["Process", "Data Store", "Control Loop", "Terminator"], correct: 2 },
+            { q: "모듈 내 구성 요소들이 서로 다른 기능을 수행하지만 동일한 시간대에 함께 실행되는 응집도는?", a: ["순차적 응집도", "시간적 응집도", "절차적 응집도", "논리적 응집도"], correct: 1 },
+            { q: "두 모듈이 동일한 자료 구조를 참조할 때의 결합도는?", a: ["자료 결합도", "스탬프 결합도", "제어 결합도", "공통 결합도"], correct: 1 },
+            { q: "현행 시스템 파악 절차 중 1단계에 해당하는 것은?", a: ["네트워크 구성 파악", "하드웨어 구성 파악", "구성 및 기능 파악", "데이터베이스 구성 파악"], correct: 2 },
+            { q: "UML의 관계 중 한 객체의 상태 변화가 다른 객체에 영향을 주는 관계는?", a: ["의존 관계", "일반화 관계", "실체화 관계", "연관 관계"], correct: 0 },
+            { q: "GoF 디자인 패턴 중 클래스의 인터페이스를 다른 클래스에서 사용할 수 있도록 변환하는 패턴은?", a: ["Builder", "Adapter", "Bridge", "Facade"], correct: 1 },
+            { q: "사용자 인터페이스(UI) 설계 시 고려사항이 아닌 것은?", a: ["가시성", "일관성", "복잡성 최소화", "하드웨어 성능 극대화"], correct: 3 },
+            { q: "소프트웨어 아키텍처 모델 중 뷰(View)가 아닌 것은?", a: ["논리 뷰", "구현 뷰", "데이터 뷰", "프로세스 뷰"], correct: 2 },
+            { q: "요구사항 검토 방법 중 전문가들이 모여 명세서를 보면서 결함을 찾아내는 기법은?", a: ["워크스루", "인스펙션", "프로토타이핑", "케이스 분석"], correct: 1 },
+            { q: "결합도(Coupling) 중 가장 약한(좋은) 단계는?", a: ["내용 결합도", "제어 결합도", "자료 결합도", "외부 결합도"], correct: 2 },
+            { q: "미들웨어의 종류 중 분산 환경에서 앱 간에 메시지를 전달하는 것은?", a: ["RPC", "MOM", "ORB", "TP Monitor"], correct: 1 },
+            { q: "데이터베이스 설계 단계 중 논리적 설계 단계의 주요 작업은?", a: ["트랜잭션 모델링", "물리적 저장구조 설계", "스키마 설계 및 정규화", "요구조건 분석"], correct: 2 },
+            { q: "객체지향 설계 원칙(SOLID) 중 하위 클래스는 상위 클래스를 대체할 수 있어야 한다는 원칙은?", a: ["SRP", "OCP", "LSP", "ISP"], correct: 2 },
+            { q: "HIPO(Hierarchical Input Process Output)의 특징이 아닌 것은?", a: ["시스템 기능 기술", "보기 쉽고 이해하기 쉬움", "수정 및 유지보수 용이", "상향식 설계 적합"], correct: 3 }
         ];
 
-        let filtered = [];
-        let curr = 0;
-        let score = 0;
-        let wrongs = [];
+        let currentIdx = 0;
 
-        function changeCategory() {
-            localStorage.setItem('cat', document.getElementById('categoryFilter').value);
-            startQuiz();
+        function loadQuiz() {
+            const q = quizData[currentIdx];
+            document.getElementById('progress').innerText = `문제 ${currentIdx + 1} / ${quizData.length}`;
+            document.getElementById('question').innerText = q.q;
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            q.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(i);
+                optionsDiv.appendChild(btn);
+            });
         }
 
-        function startQuiz() {
-            const cat = localStorage.getItem('cat') || "전체";
-            document.getElementById('categoryFilter').value = cat;
-            filtered = cat === "전체" ? quizData : quizData.filter(x => x.cat === cat);
-            
-            const savedIdx = localStorage.getItem('idx_' + cat);
-            curr = savedIdx ? parseInt(savedIdx) : 0;
-            if (curr >= filtered.length) curr = 0;
-
-            score = 0; wrongs = [];
-            document.getElementById('quiz-area').style.display = 'block';
-            document.getElementById('summary-area').style.display = 'none';
-            showQ();
-        }
-
-        function showQ() {
-            if(curr >= filtered.length) { showSum(); return; }
-            localStorage.setItem('idx_' + (localStorage.getItem('cat') || "전체"), curr);
-            
-            const q = filtered[curr];
-            document.getElementById('score-text').innerText = `Score: ${score} / ${filtered.length} (${curr+1}번째)`;
-            document.getElementById('q-text').innerText = q.q;
-            document.getElementById('hint-text').style.display = 'none';
-            document.getElementById('result-box').style.display = 'none';
-            
-            const area = document.getElementById('ans-area');
-            if (q.type === "choice") {
-                document.getElementById('confirm-btn').style.display = 'none';
-                area.innerHTML = `<div class="options">${q.opts.map(o => `<button onclick="check('${o}')">${o}</button>`).join('')}</div>`;
-            } else {
-                document.getElementById('confirm-btn').style.display = 'block';
-                area.innerHTML = `<input type="text" id="user-input" class="input-box" placeholder="정답 입력..." onkeypress="if(event.keyCode==13) checkInputAnswer()">`;
-            }
-        }
-
-        function showHint() {
-            const h = document.getElementById('hint-text');
-            h.innerText = filtered[curr].hint;
-            h.style.display = 'block';
-        }
-
-        function check(u) {
-            const q = filtered[curr];
-            const isOk = u.trim().toLowerCase() === q.ans.toLowerCase();
-            if (isOk) score++; else wrongs.push(q);
-            
-            document.getElementById('res-status').innerText = isOk ? "Correct!" : "Incorrect (Ans: "+q.ans+")";
-            document.getElementById('res-exp').innerText = q.exp;
-            document.getElementById('result-box').className = "result-box " + (isOk ? "correct" : "wrong");
-            document.getElementById('result-box').style.display = 'block';
-            
-            if(curr === filtered.length - 1) {
-                document.getElementById('next-btn-text').innerText = "결과 확인";
-            } else {
-                document.getElementById('next-btn-text').innerText = "Next";
-            }
-        }
-
-        function checkInputAnswer() {
-            const val = document.getElementById('user-input').value;
-            if(!val) return;
-            check(val);
-        }
-
-        function goNext() {
-            curr++;
-            showQ();
-        }
-
-        function showSum() {
-            document.getElementById('quiz-area').style.display = 'none';
-            document.getElementById('summary-area').style.display = 'block';
-            document.getElementById('final-stat').innerText = `${score} / ${filtered.length} (${Math.round(score/filtered.length*100)}%)`;
-            document.getElementById('wrong-list').innerHTML = wrongs.length > 0 
-                ? "<strong>오답노트:</strong><br>" + wrongs.map(w => `<div class="wrong-item">· ${w.q} (정답: ${w.ans})</div>`).join('')
-                : "만점입니다! 아주 훌륭해요.";
-        }
-
-        function restart() {
-            localStorage.setItem('idx_' + (localStorage.getItem('cat') || "전체"), 0);
-            startQuiz();
-        }
-
-        window.onload = startQuiz;
-    </script>
-</body>
-</html>
-
-
+        function checkAnswer(choice) {
+            const feedback = document.getElementById('feedback');
+            if(choice === quizData[currentIdx].correct) {
+                feedback.innerText = "✅ 정답입니다!";
+                feedback.style.color = "#28a745";
+                setTimeout(() => {
+                    currentIdx++;
+                    if(currentIdx < quizData.length) {
+                        feedback.innerText = "";
+                        loadQuiz();
+                    } else {
+                        document.getElementById('quiz-app').innerHTML = "<h2>🎉 1단원 완료! 수
