@@ -3,303 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Daily Report</title>
+    <title>Daily Study Log</title>
     <style>
-        :root { --bg: #ffffff; --card: #ffffff; --text: #333333; --border: #e0e0e0; --btn-bg: #f5f5f5; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; font-size: 16px; }
-        .container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; min-height: 90vh; }
+        :root { --bg: #ffffff; --text: #333; --border: #eee; --accent: #444; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .hidden { display: none !important; }
         
-        /* 메인 디자인 */
-        .menu-card { background: var(--card); padding: 18px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 12px; cursor:pointer; }
-        .unit-title { font-weight: 500; font-size: 1rem; color: #444; }
+        /* 메인 메뉴 스타일 */
+        .menu-card { 
+            background: #fff; border: 1px solid var(--border); border-radius: 8px; 
+            padding: 15px; margin-bottom: 10px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .score-badge { font-size: 0.8rem; color: #888; background: #f9f9f9; padding: 2px 8px; border-radius: 10px; }
         
-        /* 퀴즈 카드 */
-        .quiz-card { background: var(--card); padding: 20px; border: 1px solid var(--border); border-radius: 4px; margin-top: 10px; }
-        .q-text { font-size: 1.1rem; font-weight: 500; margin-bottom: 25px; color: #222; text-align: center; word-break: keep-all; }
+        /* 퀴즈 UI */
+        .quiz-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; margin-bottom: 15px; }
+        .q-card { border: 1px solid var(--border); padding: 20px; border-radius: 8px; text-align: center; }
+        .q-text { font-size: 1.05rem; font-weight: 600; margin-bottom: 25px; word-break: keep-all; }
         
-        /* 입력창 중앙 정렬 */
-        .input-area { text-align: center; width: 100%; }
+        /* 입력 및 선택지 */
         input[type="text"] { 
             width: 90%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; 
-            font-size: 1rem; margin-bottom: 15px; outline: none; text-align: center; 
+            font-size: 1rem; margin-bottom: 15px; text-align: center; outline: none;
+        }
+        .option-btn { 
+            display: block; width: 100%; padding: 12px; margin-bottom: 8px; 
+            border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; text-align: left;
         }
         
-        /* 버튼 가로 배열 & 동일 크기 */
-        .btn-row { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
-        .action-btn { 
-            flex: 1; padding: 14px; border: 1px solid #ddd; border-radius: 4px; 
-            font-size: 0.9rem; cursor: pointer; background: var(--btn-bg); color: #666;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .next-btn { background: #444 !important; color: #fff !important; }
+        /* 하단 버튼 */
+        .btn-row { display: flex; gap: 8px; margin-top: 15px; }
+        .btn { flex: 1; padding: 14px; border-radius: 4px; border: 1px solid #ddd; background: #f5f5f5; cursor: pointer; font-size: 0.9rem; }
+        .btn-next { background: var(--accent); color: #fff; border: none; }
         
-        /* 상태 표시 (스텔스 정답/오답) */
-        .status-msg { font-size: 0.85rem; margin-bottom: 10px; text-align: center; font-weight: bold; }
-        .is-correct { color: #aaaaaa; } /* 너무 튀지 않는 정답 표시 */
-        .is-wrong { color: #d9534f; }
-
-        .hidden { display: none !important; }
-        .progress-bar { height: 2px; background: #eee; width: 100%; margin-bottom: 10px; }
-        .p-inner { height: 100%; background: #bbb; transition: 0.3s; }
-        
-        /* 하단 네비게이션 */
-        .bottom-nav { margin-top: auto; padding: 20px 0; text-align: center; }
-        .nav-link { color: #999; font-size: 0.85rem; text-decoration: none; cursor: pointer; margin: 0 10px; }
+        .status-msg { height: 20px; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold; }
+        .nav-link { display: block; text-align: center; margin-top: 30px; color: #aaa; font-size: 0.8rem; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="view-menu">
-            <div style="height: 40px;"></div> <div class="menu-card" onclick="resumeLast()" style="background:#444; color:#fff; border:none;">
-                <div style="font-size:1.1rem;">이전 문제 이어서 풀기</div>
-                <small id="resume-info" style="opacity:0.7;">기록 로드 중...</small>
-            </div>
-            
-            <div id="unit-buttons"></div>
-
-            <div class="menu-card" onclick="startWrongAnswers()">
-                <div style="color:#666;">오답 노트 확인</div>
-                <small id="wrong-count" style="color:#999;">0개의 항목</small>
-            </div>
+            <div style="height: 30px;"></div>
+            <div id="set-list"></div>
+            <div class="nav-link" onclick="resetScores()">점수 기록 초기화</div>
         </div>
 
         <div id="view-quiz" class="hidden">
-            <div class="progress-bar"><div id="p-bar" class="p-inner"></div></div>
-            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#aaa; margin-bottom:10px; padding:0 5px;">
-                <span id="display-unit"></span>
-                <span id="p-text"></span>
+            <div class="quiz-header">
+                <span id="display-title"></span>
+                <span id="display-progress"></span>
             </div>
-
-            <div class="quiz-card">
-                <div id="status-display" class="status-msg"></div>
+            <div class="q-card">
+                <div id="status-msg" class="status-msg"></div>
                 <div id="q-text" class="q-text"></div>
                 
-                <div class="input-area" id="area-subjective">
+                <div id="area-subjective">
                     <input type="text" id="user-ans" placeholder="정답 입력" autocomplete="off">
-                    <div class="btn-row" id="row-check">
-                        <button class="action-btn" style="flex:1" onclick="toggleHint()">Info</button>
-                        <button class="action-btn" style="flex:1" onclick="checkSubjective()">Verify</button>
-                    </div>
                 </div>
-
-                <div id="hint-box" class="hidden" style="background:#fafafa; padding:12px; margin:15px 0; font-size:0.85rem; border:1px solid #eee; text-align:center; word-break:keep-all;"></div>
                 
+                <div id="area-objective" class="hidden"></div>
+
+                <div id="hint-box" class="hidden" style="background:#f9f9f9; padding:10px; font-size:0.85rem; margin:10px 0; border:1px dashed #ddd;"></div>
+
+                <div class="btn-row" id="row-check">
+                    <button class="btn" onclick="toggleHint()">Info</button>
+                    <button class="btn" id="btn-verify" onclick="checkAnswer()">Verify</button>
+                </div>
                 <div class="btn-row hidden" id="row-next">
-                    <button class="action-btn" style="flex:1" onclick="toggleHint()">Info</button>
-                    <button class="action-btn next-btn" style="flex:1" onclick="nextStep()">Next Stage</button>
+                    <button class="btn" onclick="toggleHint()">Info</button>
+                    <button class="btn btn-next" onclick="nextQuestion()">Next Stage</button>
                 </div>
             </div>
-
-            <div class="bottom-nav">
-                <span class="nav-link" id="btn-prev" onclick="prevStep()">이전 문제</span>
-                <span class="nav-link" onclick="goHome()">목록으로</span>
-            </div>
+            <div class="nav-link" onclick="goHome()">그만 풀고 목록으로</div>
         </div>
     </div>
 
     <script>
-        // PDF 기반 1단원 60문제 (핵심 데이터)
-        const quizData = {
-            1: [
-                { q: "소프트웨어 품질 향상을 위해 기존 시스템을 분석하여 재구성하는 공학은?", a: ["재공학"], h: "분석->재구성->역공학->이관" },
-                { q: "애자일 선언문 중 계획에 따르기보다 무엇에 대응하는 것을 강조하는가?", a: ["변화"], h: "Responding to change" },
-                { q: "XP의 5가지 가치 중 하나로, 개발자가 자신의 코드를 정직하게 수정하는 것은?", a: ["용기"], h: "Courage" },
-                { q: "객체지향 설계 원칙 중 자식 클래스가 부모 클래스를 대체할 수 있어야 한다는 것은?", a: ["LSP", "리스코프 치환 원칙"], h: "Liskov Substitution Principle" },
-                { q: "UML 관계 중 전체 객체가 소멸하면 부분 객체도 소멸하는 강한 포함 관계는?", a: ["합성 관계"], h: "Composition" },
-                { q: "생성 패턴 중 하나로, 복잡한 객체의 생성과 표현을 분리하는 패턴은?", a: ["빌더", "Builder"], h: "동일한 생성 절차에서 다른 표현 결과 생성" },
-                { q: "서브클래스에서 객체 생성을 결정하도록 하는 생성 패턴은?", a: ["팩토리 메서드"], h: "Factory Method" },
-                { q: "가장 엄격한 소프트웨어 요구사항 검토 기법은?", a: ["인스펙션"], h: "Inspection" },
-                { q: "UI 설계 원칙 중 사용자가 원하는 목적을 정확하게 달성하는 성질은?", a: ["유효성"], h: "Effectiveness" },
-                { q: "동일한 시간대에 실행되는 모듈 요소들의 응집도는?", a: ["시간적 응집도"], h: "Temporal Cohesion" },
-                { q: "동일한 자료 구조를 참조하는 모듈 간의 결합도는?", a: ["스탬프 결합도"], h: "Stamp Coupling" },
-                { q: "복잡한 서브시스템에 단순한 접점을 제공하는 디자인 패턴은?", a: ["파사드", "Facade"], h: "건물의 정면이라는 뜻" },
-                { q: "입력-처리-출력을 시각적으로 표현하는 분석 도구는?", a: ["HIPO"], h: "Hierarchy Input Process Output" },
-                { q: "객체의 상태 변화를 관찰하여 통지하는 패턴은?", a: ["옵저버"], h: "Observer" },
-                { q: "하향식 통합 테스트에서 사용하는 가상 모듈은?", a: ["스텁", "Stub"], h: "하상스(하향식-상향식-스텁)" },
-                { q: "데이터베이스 설계 단계 중 스키마 평가와 트랜잭션 모델링이 일어나는 단계는?", a: ["논리적 설계"], h: "개-논-물" },
-                { q: "IP 계층에서 트래픽을 암호화하여 보안을 강화하는 규격은?", a: ["IPSec"], h: "IP Security" },
-                { q: "메시지 기반 분산 앱 간 통신 미들웨어는?", a: ["MOM"], h: "Message Oriented Middleware" },
-                { q: "결합도가 가장 낮은(좋은) 단계는?", a: ["자료 결합도"], h: "Data Coupling" },
-                { q: "데이터 흐름도(DFD)의 구성 요소 중 처리 과정을 나타내는 기호는?", a: ["프로세스", "Process", "원"], h: "동그라미 기호" },
-                { q: "사용자 시점에서 시스템 기능을 기술하는 UML 도구는?", a: ["유스케이스"], h: "Use Case" },
-                { q: "모듈 내 요소들이 순차적으로 출력을 입력으로 사용하는 응집도는?", a: ["순차적 응집도"], h: "Sequential Cohesion" },
-                { q: "GoF 디자인 패턴 중 '구조 패턴'에 해당하지 않는 것은?", a: ["빌더", "Builder", "싱글톤"], h: "빌더, 싱글톤은 생성 패턴입니다." },
-                { q: "스크럼에서 매일 진행하는 15분 내외의 짧은 회의는?", a: ["데일리 스크럼"], h: "Daily Scrum" },
-                { q: "소프트웨어 개발 단계 중 오류를 발견하고 수정하는 단계는?", a: ["테스트"], h: "Test" },
-                { q: "두 모듈이 동일한 외부 환경을 참조하는 결합도는?", a: ["외부 결합도"], h: "External Coupling" },
-                { q: "하드웨어와 소프트웨어를 포함한 시스템 전체의 구조는?", a: ["아키텍처"], h: "Architecture" },
-                { q: "정적인 구조를 표현하는 대표적인 UML 다이어그램은?", a: ["클래스 다이어그램"], h: "Class Diagram" },
-                { q: "요구사항 검토 방법 중 팀이 모여 소스를 훑어보는 비공식 기법은?", a: ["워크스루"], h: "Walkthrough" },
-                { q: "시스템의 성능 향상을 위해 중복 데이터를 허용하는 기법은?", a: ["반정규화"], h: "Denormalization" }
-            ],
-            2: [], 3: [], 4: [], 5: []
-        };
+        // PDF 마무리 특강 핵심 반영 (총 60문제 예시)
+        const allQuestions = [
+            // 1세트: 공학 및 방법론
+            { q: "소프트웨어 공학의 3R 중 '분석 -> 재구성 -> 역공학 -> 이관'의 절차를 가지는 것은?", a: ["재공학"], h: "Re-Engineering", type: "S" },
+            { q: "애자일 방법론 중 XP의 5가지 핵심 가치가 아닌 것은?", a: ["가시성"], opts: ["용기", "존중", "가시성", "피드백"], h: "용기, 단순성, 커뮤니케이션, 피드백, 존중", type: "O" },
+            { q: "비용 산정 기법 중 Rayleigh-Norden 곡선을 기초로 하는 수학적 모델은?", a: ["putnam", "푸트남"], h: "SLIM 도구 사용", type: "S" },
+            { q: "요구사항 개발 프로세스 순서로 옳은 것은?", a: ["도출-분석-명세-확인"], opts: ["분석-도출-명세-확인", "도출-분석-명세-확인", "도출-명세-분석-확인"], h: "도분명확", type: "O" },
+            { q: "메시지 기반의 비동기식 전송을 하는 미들웨어는?", a: ["MOM"], h: "Message Oriented Middleware", type: "S" },
+            { q: "UML 관계 중 전체 객체가 소멸하면 부분 객체도 함께 소멸하는 관계는?", a: ["합성 관계", "합성"], h: "Composition (검은 마름모)", type: "S" },
+            { q: "아키텍처 4+1 뷰 중 시스템의 물리적 배치를 나타내는 뷰는?", a: ["배치 뷰"], h: "Deployment View", type: "S" },
+            { q: "GoF 디자인 패턴 중 '생성 패턴'에 속하는 것은?", a: ["Builder"], opts: ["Adapter", "Facade", "Builder", "Proxy"], h: "추빌팩프싱 (추상팩토리, 빌더, 팩토리메서드, 프로토타입, 싱글톤)", type: "O" },
+            { q: "객체지향 설계 원칙(SOLID) 중 '자식 클래스는 부모 클래스를 대체할 수 있어야 한다'는 원칙은?", a: ["LSP", "리스코프 치환 원칙"], h: "Liskov Substitution Principle", type: "S" },
+            { q: "UI 설계 원칙 중 '누구나 쉽게 배우고 익힐 수 있어야 함'을 의미하는 것은?", a: ["학습성"], h: "Understandability", type: "S" },
+            // ... (실제 데이터는 60개까지 확장 가능, 여기서는 구조만 10개만 예시로 작성)
+            { q: "모듈 내 요소들이 순차적으로 출력을 입력으로 사용하는 응집도는?", a: ["순차적 응집도"], h: "Sequential Cohesion", type: "S" },
+            { q: "결합도가 가장 높은(안 좋은) 단계는?", a: ["내용 결합도"], h: "Content Coupling", type: "S" }
+        ];
 
-        let curUnit = 1;
+        let currentSet = [];
         let curIdx = 0;
-        let isWrongMode = false;
-        let scoreMap = {}; // 최초 응답 저장용
+        let setNum = 0;
+        let correctCount = 0;
 
+        // 메인 메뉴 렌더링
         function renderMenu() {
-            const list = document.getElementById('unit-buttons');
+            const list = document.getElementById('set-list');
             list.innerHTML = '';
-            for(let i=1; i<=5; i++) {
-                const prog = localStorage.getItem(`prog_${i}`) || 0;
-                const total = quizData[i].length;
-                const percent = total > 0 ? Math.round((prog/total)*100) : 0;
+            for(let i=1; i<=3; i++) {
+                const lastScore = localStorage.getItem(`score_1_${i}`) || "-";
                 list.innerHTML += `
-                    <div class="menu-card" onclick="startUnit(${i})">
-                        <div class="unit-title">${i}단원. ${getUnitName(i)}</div>
-                        <div class="progress-bar" style="margin-top:8px;"><div class="p-inner" style="width:${percent}%"></div></div>
+                    <div class="menu-card" onclick="startSet(${i})">
+                        <div>
+                            <div style="font-weight:bold;">1단원 - 세트 ${i}</div>
+                            <div style="font-size:0.75rem; color:#999;">20개 문제 풀기</div>
+                        </div>
+                        <div class="score-badge">${lastScore}점</div>
                     </div>`;
             }
-            const wrongList = JSON.parse(localStorage.getItem('wrong_list') || "[]");
-            document.getElementById('wrong-count').innerText = `${wrongList.length}개의 항목`;
-            
-            const lastU = localStorage.getItem('last_unit');
-            const lastI = localStorage.getItem('last_idx');
-            const info = document.getElementById('resume-info');
-            if(lastU) info.innerText = `${lastU}단원 - ${parseInt(lastI)+1}번 문제부터 시작`;
-            else info.innerText = "최근 학습 기록이 없습니다.";
         }
 
-        function getUnitName(i) {
-            return ["", "소프트웨어 설계", "데이터베이스 설계", "통합 구현", "서비스 구성", "시스템 보안"][i];
-        }
-
-        function startUnit(u) {
-            if(quizData[u].length === 0) return;
-            curUnit = u;
+        function startSet(n) {
+            setNum = n;
             curIdx = 0;
-            isWrongMode = false;
-            initQuiz();
-        }
-
-        function initQuiz() {
+            correctCount = 0;
+            
+            // 문제 랜덤 셔플 후 20개 추출 (실제 데이터 부족 시 전체 셔플)
+            currentSet = [...allQuestions].sort(() => Math.random() - 0.5).slice(0, 20);
+            
             document.getElementById('view-menu').classList.add('hidden');
             document.getElementById('view-quiz').classList.remove('hidden');
             loadQuestion();
         }
 
         function loadQuestion() {
-            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
-            const q = data[curIdx];
-            
-            document.getElementById('display-unit').innerText = isWrongMode ? "오답 복습" : `${curUnit}단원`;
-            document.getElementById('p-text').innerText = `${curIdx + 1} / ${data.length}`;
+            const q = currentSet[curIdx];
+            document.getElementById('display-title').innerText = `1단원 - 세트 ${setNum}`;
+            document.getElementById('display-progress').innerText = `${curIdx + 1} / ${currentSet.length}`;
             document.getElementById('q-text').innerText = q.q;
-            document.getElementById('user-ans').value = '';
-            document.getElementById('status-display').innerText = '';
+            document.getElementById('status-msg').innerText = '';
             document.getElementById('hint-box').classList.add('hidden');
             document.getElementById('row-next').classList.add('hidden');
             document.getElementById('row-check').classList.remove('hidden');
-            
-            updateP();
-            
-            // 0.1초 뒤 입력창 포커스 (키보드 자동 활성화)
-            setTimeout(() => {
+
+            if(q.type === "S") {
+                document.getElementById('area-subjective').classList.remove('hidden');
+                document.getElementById('area-objective').classList.add('hidden');
                 const input = document.getElementById('user-ans');
-                input.focus();
-            }, 100);
+                input.value = '';
+                setTimeout(() => input.focus(), 150);
+            } else {
+                document.getElementById('area-subjective').classList.add('hidden');
+                const objArea = document.getElementById('area-objective');
+                objArea.classList.remove('hidden');
+                objArea.innerHTML = '';
+                q.opts.forEach(opt => {
+                    objArea.innerHTML += `<button class="option-btn" onclick="checkObjective('${opt}')">${opt}</button>`;
+                });
+            }
         }
 
-        function checkSubjective() {
-            const user = document.getElementById('user-ans').value.trim().toLowerCase();
-            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
-            const q = data[curIdx];
-            const correctList = q.a.map(v => v.toLowerCase());
-            const status = document.getElementById('status-display');
+        // 주관식 채점 (공백/대소문자 무시)
+        function checkAnswer() {
+            const user = document.getElementById('user-ans').value.trim().toLowerCase().replace(/\s+/g, '');
+            const q = currentSet[curIdx];
+            const isCorrect = q.a.some(ans => ans.toLowerCase().replace(/\s+/g, '') === user);
             
-            // 최초 응답 점수 기록
-            if(!isWrongMode && scoreMap[`${curUnit}_${curIdx}`] === undefined) {
-                scoreMap[`${curUnit}_${curIdx}`] = correctList.includes(user);
-            }
+            showResult(isCorrect);
+        }
 
-            if(correctList.includes(user)) {
-                status.innerText = "✓ 확인됨";
-                status.className = "status-msg is-correct";
+        // 객관식 채점
+        function checkObjective(val) {
+            const q = currentSet[curIdx];
+            showResult(q.a.includes(val));
+        }
+
+        function showResult(isCorrect) {
+            const msg = document.getElementById('status-msg');
+            if(isCorrect) {
+                msg.innerText = "✓ 확인됨";
+                msg.style.color = "#aaa";
+                correctCount++;
             } else {
-                status.innerText = `✕ 미일치 (정답: ${q.a[0]})`;
-                status.className = "status-msg is-wrong";
-                saveWrong(q);
+                msg.innerText = `✕ 미일치 (정답: ${currentSet[curIdx].a[0]})`;
+                msg.style.color = "#d9534f";
             }
-
             document.getElementById('row-check').classList.add('hidden');
             document.getElementById('row-next').classList.remove('hidden');
         }
 
-        function saveWrong(q) {
-            let list = JSON.parse(localStorage.getItem('wrong_list') || "[]");
-            if(!list.some(item => item.q === q.q)) {
-                list.push(q);
-                localStorage.setItem('wrong_list', JSON.stringify(list));
-            }
-        }
-
-        function nextStep() {
-            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
-            if(curIdx < data.length - 1) {
+        function nextQuestion() {
+            if(curIdx < currentSet.length - 1) {
                 curIdx++;
-                if(!isWrongMode) {
-                    localStorage.setItem(`prog_${curUnit}`, curIdx);
-                    localStorage.setItem('last_unit', curUnit);
-                    localStorage.setItem('last_idx', curIdx);
-                }
                 loadQuestion();
             } else {
-                if(!isWrongMode) {
-                    const totalScore = Object.keys(scoreMap).filter(k => k.startsWith(`${curUnit}_`) && scoreMap[k]).length;
-                    alert(`${curUnit}단원 완료\n최초 정답률: ${Math.round(totalScore/data.length*100)}%`);
-                    localStorage.setItem(`prog_${curUnit}`, data.length);
-                }
+                const finalScore = Math.round((correctCount / currentSet.length) * 100);
+                alert(`세트 종료! 점수: ${finalScore}점`);
+                localStorage.setItem(`score_1_${setNum}`, finalScore);
                 goHome();
             }
         }
 
-        function prevStep() {
-            if(curIdx > 0) {
-                curIdx--;
-                loadQuestion();
-            }
-        }
-
-        function resumeLast() {
-            const u = localStorage.getItem('last_unit');
-            const i = localStorage.getItem('last_idx');
-            if(u) {
-                curUnit = parseInt(u);
-                curIdx = parseInt(i);
-                isWrongMode = false;
-                initQuiz();
-            } else { alert("기록이 없습니다."); }
-        }
-
-        function startWrongAnswers() {
-            const list = JSON.parse(localStorage.getItem('wrong_list') || "[]");
-            if(list.length === 0) return alert("기록이 없습니다.");
-            isWrongMode = true;
-            curIdx = 0;
-            initQuiz();
-        }
-
         function toggleHint() {
-            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
-            const h = document.getElementById('hint-box');
-            h.innerText = data[curIdx].h;
-            h.classList.toggle('hidden');
-            // 힌트가 열려도 입력창 포커스 유지
-            document.getElementById('user-ans').focus();
-        }
-
-        function updateP() {
-            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list') || "[]") : quizData[curUnit];
-            const p = (curIdx / data.length) * 100;
-            document.getElementById('p-bar').style.width = p + '%';
+            const box = document.getElementById('hint-box');
+            box.innerText = currentSet[curIdx].h;
+            box.classList.toggle('hidden');
+            if(currentSet[curIdx].type === "S") document.getElementById('user-ans').focus();
         }
 
         function goHome() { location.reload(); }
+        function resetScores() { localStorage.clear(); location.reload(); }
 
         renderMenu();
     </script>
