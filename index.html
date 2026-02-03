@@ -39,6 +39,7 @@
         
         .status-msg { height: 20px; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold; }
         .nav-link { display: block; text-align: center; margin-top: 30px; color: #aaa; font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+        kbd { background: #eee; border-radius: 3px; padding: 1px 4px; font-size: 0.7rem; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
@@ -78,15 +79,15 @@
                     <input type="text" id="user-ans" placeholder="정답 입력" autocomplete="off">
                 </div>
                 <div id="area-objective" class="hidden"></div>
-                <div id="hint-box" class="hidden" style="background:#f9f9f9; padding:10px; font-size:0.85rem; margin:10px 0; border:1px dashed #ddd;"></div>
+                <div id="hint-box" class="hidden" style="background:#f9f9f9; padding:10px; font-size:0.85rem; margin:10px 0; border:1px dashed #ddd; text-align: left;"></div>
 
                 <div class="btn-row" id="row-check">
-                    <button class="btn" onclick="toggleHint()">Info</button>
-                    <button class="btn" id="btn-verify" onclick="checkAnswer()">Verify (Enter)</button>
+                    <button class="btn" onclick="toggleHint()">Info <kbd>Ctrl</kbd></button>
+                    <button class="btn" id="btn-verify" onclick="checkAnswer()">Verify <kbd>Enter</kbd></button>
                 </div>
                 <div class="btn-row hidden" id="row-next">
-                    <button class="btn" onclick="toggleHint()">Info</button>
-                    <button class="btn btn-next" onclick="nextQuestion()">Next (Enter)</button>
+                    <button class="btn" onclick="toggleHint()">Info <kbd>Ctrl</kbd></button>
+                    <button class="btn btn-next" onclick="nextQuestion()">Next <kbd>Enter</kbd></button>
                 </div>
             </div>
             <div class="nav-link" onclick="goHome()">목록으로 돌아가기</div>
@@ -94,19 +95,18 @@
     </div>
 
     <script>
+        // PDF 특강 핵심 반영 데이터
         const allQuestions = [
-            // [PDF 반영 데이터]
             { q: "소프트웨어 공학의 3R 중 '분석 -> 재구성 -> 역공학 -> 이관'의 절차를 가지는 것은?", a: ["재공학"], h: "Re-Engineering", type: "S" },
-            { q: "애자일 방법론 중 XP의 5가지 핵심 가치가 아닌 것은?", a: ["가시성"], opts: ["용기", "존중", "가시성", "피드백"], h: "용단커피존", type: "O" },
-            { q: "Rayleigh-Norden 곡선을 기초로 하는 수학적 산정 모델은?", a: ["putnam", "푸트남"], h: "SLIM 도구", type: "S" },
+            { q: "애자일 방법론 중 XP의 5가지 핵심 가치가 아닌 것은?", a: ["가시성"], opts: ["용기", "존중", "가시성", "피드백"], h: "용단커피존 (용기, 단순성, 커뮤니케이션, 피드백, 존중)", type: "O" },
+            { q: "Rayleigh-Norden 곡선을 기초로 하는 수학적 산정 모델은?", a: ["putnam", "푸트남"], h: "SLIM 도구 사용", type: "S" },
             { q: "요구사항 개발 프로세스: 도출 -> ( ) -> 명세 -> 확인. 괄호는?", a: ["분석"], h: "도분명확", type: "S" },
             { q: "비동기식 메시지 전송 미들웨어는?", a: ["MOM"], h: "Message Oriented Middleware", type: "S" },
-            { q: "UML 관계 중 전체 객체가 소멸하면 부분 객체도 소멸하는 것은?", a: ["합성 관계", "합성"], h: "Composition", type: "S" },
-            { q: "사용자 시점의 시스템 기능을 표현하는 UML 다이어그램은?", a: ["유스케이스", "Use Case"], h: "상호작용 표현", type: "S" },
+            { q: "UML 관계 중 전체 객체가 소멸하면 부분 객체도 소멸하는 강한 포함 관계는?", a: ["합성 관계", "합성"], h: "Composition (검은 마름모)", type: "S" },
+            { q: "사용자 시점의 시스템 기능을 표현하는 UML 다이어그램은?", a: ["유스케이스", "Use Case"], h: "Actor와 System 간 상호작용", type: "S" },
             { q: "GoF 패턴 중 생성 패턴에 해당하는 것은?", a: ["Builder"], opts: ["Adapter", "Facade", "Builder", "Proxy"], h: "추빌팩프싱", type: "O" },
-            { q: "자식 클래스가 부모 클래스를 대체할 수 있어야 한다는 원칙은?", a: ["LSP", "리스코프 치환 원칙"], h: "SOLID 중 L", type: "S" },
-            { q: "누구나 쉽게 배우고 익힐 수 있어야 함을 의미하는 UI 원칙은?", a: ["학습성"], h: "Understandability", type: "S" }
-            // ... 데이터 추가 가능
+            { q: "자식 클래스가 부모 클래스를 대체할 수 있어야 한다는 객체지향 설계 원칙은?", a: ["LSP", "리스코프 치환 원칙"], h: "Liskov Substitution Principle", type: "S" },
+            { q: "누구나 쉽게 배우고 익힐 수 있어야 함을 의미하는 UI 설계 원칙은?", a: ["학습성"], h: "Understandability", type: "S" }
         ];
 
         let currentSet = [];
@@ -116,7 +116,6 @@
         let scoreMap = {};
 
         function renderMenu() {
-            // 1단원 세트 리스트
             const setList1 = document.getElementById('set-list-1');
             setList1.innerHTML = '';
             for(let i=1; i<=3; i++) {
@@ -128,7 +127,6 @@
                     </div>`;
             }
 
-            // 나머지 단원들
             const otherUnits = document.getElementById('other-units');
             otherUnits.innerHTML = '';
             for(let i=2; i<=5; i++) {
@@ -142,17 +140,18 @@
             }
 
             const lastU = localStorage.getItem('last_unit');
+            const lastS = localStorage.getItem('last_set');
             const lastI = localStorage.getItem('last_idx');
-            document.getElementById('resume-info').innerText = lastU ? `${lastU}단원 풀이 중` : "기록 없음";
+            document.getElementById('resume-info').innerText = lastU ? `${lastU}단원 세트 ${lastS} 풀이 중` : "기록 없음";
             document.getElementById('wrong-count').innerText = JSON.parse(localStorage.getItem('wrong_list') || "[]").length + "개";
         }
 
-        function startSet(u, s) {
+        function startSet(u, s, resumeIdx = 0) {
             setNum = s;
-            curIdx = 0;
+            curIdx = resumeIdx;
             isWrongMode = false;
-            // 20개씩 끊기 (예시 데이터는 작으므로 셔플만)
-            currentSet = [...allQuestions].sort(() => Math.random() - 0.5); 
+            // 랜덤 시드 고정을 위해 간단한 셔플 (필요시 시드 고정 로직 추가 가능)
+            currentSet = [...allQuestions].sort((a, b) => a.q.length - b.q.length); 
             initQuiz();
         }
 
@@ -173,6 +172,13 @@
             document.getElementById('row-next').classList.add('hidden');
             document.getElementById('row-check').classList.remove('hidden');
 
+            // 저장 (이어풀기용)
+            if(!isWrongMode) {
+                localStorage.setItem('last_unit', 1);
+                localStorage.setItem('last_set', setNum);
+                localStorage.setItem('last_idx', curIdx);
+            }
+
             if(q.type === "S") {
                 document.getElementById('area-subjective').classList.remove('hidden');
                 document.getElementById('area-objective').classList.add('hidden');
@@ -190,21 +196,25 @@
             }
         }
 
-        // 키보드 엔터 지원
+        // 키보드 단축키 지원 (Enter: 확인/다음, Control: 힌트)
         document.addEventListener('keydown', (e) => {
+            if (document.getElementById('view-quiz').classList.contains('hidden')) return;
+
             if (e.key === 'Enter') {
                 const rowCheck = document.getElementById('row-check');
-                if (!rowCheck.classList.contains('hidden')) {
-                    checkAnswer();
-                } else {
-                    nextQuestion();
-                }
+                if (!rowCheck.classList.contains('hidden')) checkAnswer();
+                else nextQuestion();
+            } else if (e.key === 'Control') {
+                e.preventDefault();
+                toggleHint();
             }
         });
 
         function checkAnswer() {
-            const user = document.getElementById('user-ans').value.trim().toLowerCase().replace(/\s+/g, '');
-            const q = (isWrongMode ? JSON.parse(localStorage.getItem('wrong_list')) : currentSet)[curIdx];
+            const input = document.getElementById('user-ans');
+            const user = input.value.trim().toLowerCase().replace(/\s+/g, '');
+            const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list')) : currentSet;
+            const q = data[curIdx];
             const isCorrect = q.a.some(ans => ans.toLowerCase().replace(/\s+/g, '') === user);
             showResult(isCorrect);
         }
@@ -244,10 +254,6 @@
             const data = isWrongMode ? JSON.parse(localStorage.getItem('wrong_list')) : currentSet;
             if(curIdx < data.length - 1) {
                 curIdx++;
-                if(!isWrongMode) {
-                    localStorage.setItem('last_unit', 1);
-                    localStorage.setItem('last_idx', curIdx);
-                }
                 loadQuestion();
             } else {
                 if(!isWrongMode) {
@@ -261,12 +267,16 @@
 
         function resumeLast() {
             const u = localStorage.getItem('last_unit');
-            if(u) startSet(1, 1); // 세부 로직은 확장에 따라 보완 가능
-            else alert("기록이 없습니다.");
+            const s = localStorage.getItem('last_set');
+            const i = localStorage.getItem('last_idx');
+            if(u && s) {
+                startSet(parseInt(u), parseInt(s), parseInt(i));
+            } else { alert("기록이 없습니다."); }
         }
 
         function startWrongAnswers() {
-            if(JSON.parse(localStorage.getItem('wrong_list') || "[]").length === 0) return alert("기록 없음");
+            const list = JSON.parse(localStorage.getItem('wrong_list') || "[]");
+            if(list.length === 0) return alert("기록 없음");
             isWrongMode = true; curIdx = 0; initQuiz();
         }
 
@@ -275,6 +285,7 @@
             const box = document.getElementById('hint-box');
             box.innerText = data.h;
             box.classList.toggle('hidden');
+            if(data.type === "S") document.getElementById('user-ans').focus();
         }
 
         function goHome() { location.reload(); }
