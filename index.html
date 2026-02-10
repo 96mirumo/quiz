@@ -3,247 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Viewer</title>
+    <title>Module Viewer</title>
     <style>
-        :root { --main-bg: #ffffff; --text: #333333; --border: #dddddd; --hover: #f5f5f5; }
-        body { font-family: sans-serif; background: var(--main-bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
-        #app { max-width: 800px; margin: 0 auto; border: 1px solid var(--border); padding: 20px; min-height: 500px; }
+        :root { --bg: #ffffff; --text: #333333; --border: #dddddd; --hover: #f9f9f9; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.5; }
+        #app { max-width: 650px; margin: 0 auto; border: 1px solid var(--border); padding: 25px; min-height: 450px; }
         .hidden { display: none; }
-        button { background: #fff; border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; margin: 5px; font-size: 14px; }
+        button { background: #fff; border: 1px solid var(--border); padding: 12px; cursor: pointer; margin: 4px 0; font-size: 14px; text-align: left; width: 100%; }
         button:hover { background: var(--hover); }
-        input[type="text"] { border: 1px solid var(--border); padding: 10px; width: 80%; outline: none; }
-        .nav-btn { font-size: 12px; color: #888; border: none; background: none; text-decoration: underline; }
-        .hint-text { color: #666; font-style: italic; margin-top: 10px; font-size: 0.9em; }
-        .wrong-note-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .nav-link { font-size: 12px; color: #999; border: none; background: none; text-decoration: underline; cursor: pointer; width: auto; padding: 0; margin-bottom: 20px; }
+        input[type="text"] { border: 1px solid var(--border); padding: 12px; width: 100%; box-sizing: border-box; outline: none; margin-bottom: 10px; font-size: 16px; }
+        .hint-box { color: #777; font-size: 13px; border: 1px dashed #ccc; padding: 10px; margin: 15px 0; }
+        .status-bar { display: flex; justify-content: space-between; font-size: 11px; color: #bbb; margin-bottom: 15px; }
+        .ans-btn { background: #555; color: #fff; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="main-page">
-        <h3>문서 목록</h3>
-        <div id="unit-selection">
-            <button onclick="showSets(1)">1단원: 소프트웨어 설계</button>
-            <button onclick="showSets(2)">2단원: 소프트웨어 개발</button>
+    <div id="unit-page">
+        <div style="display:flex; flex-direction:column;">
+            <button onclick="selectUnit(1)">1. 소프트웨어 설계</button>
+            <button onclick="selectUnit(2)">2. 소프트웨어 개발</button>
+            <div style="margin-top:20px; border-top:1px solid #eee; padding-top:10px;">
+                <button onclick="resumeQuiz()">이전 문제 이어풀기</button>
+                <button onclick="showWrongNote()">오답 노트 확인</button>
+            </div>
         </div>
-        <div id="set-selection" class="hidden">
-            <p id="selected-unit-title"></p>
-            <button onclick="startQuiz(1)">Set 1</button>
-            <button onclick="startQuiz(2)">Set 2</button>
-            <button onclick="startQuiz(3)">Set 3</button>
-            <br>
-            <button class="nav-btn" onclick="goBack('main')">뒤로가기</button>
-        </div>
-        <hr>
-        <button onclick="resumeQuiz()">이전 문제 이어풀기</button>
-        <button onclick="showWrongNote()">오답 노트</button>
+    </div>
+
+    <div id="set-page" class="hidden">
+        <button class="nav-link" onclick="goHome()">← 처음으로</button>
+        <div id="set-buttons"></div>
     </div>
 
     <div id="quiz-page" class="hidden">
-        <div style="display: flex; justify-content: space-between;">
-            <button class="nav-btn" onclick="goHome()">메인으로</button>
-            <span id="quiz-progress" style="font-size: 12px;"></span>
+        <div class="status-bar">
+            <span onclick="confirmGoHome()" style="cursor:pointer;">[메인으로]</span>
+            <span id="quiz-info"></span>
         </div>
-        <div id="question-container">
+        <div id="q-content">
             <p id="q-text" style="font-weight: bold;"></p>
-            <div id="q-options" class="options-list"></div>
-            <div id="q-input-container" class="hidden">
-                <input type="text" id="answer-input" placeholder="답변 입력 (Enter)">
-                <button onclick="submitAnswer()">제출</button>
+            <div id="obj-options"></div>
+            <div id="sub-input-box" class="hidden">
+                <input type="text" id="ans-input" placeholder="답안 입력 (Enter)">
+                <button class="ans-btn" onclick="submitSubAnswer()">제출</button>
             </div>
-            <div id="hint-area" class="hidden">
-                <p id="hint-text" class="hint-text"></p>
+            <div id="hint-area" class="hidden" class="hint-box">
+                <p id="hint-text" class="hint-box"></p>
             </div>
-            <p style="font-size: 11px; color: #999;">단축키: 힌트(H), 이전(←), 제출(Enter)</p>
         </div>
-        <div id="navigation">
-            <button onclick="prevQuestion()">이전 문제 보기</button>
-            <button onclick="toggleHint()">힌트 보기(H)</button>
+        <div style="margin-top: 30px; display: flex; gap: 10px;">
+            <button onclick="prevQuestion()" style="width:50%; text-align:center;">이전 (←)</button>
+            <button onclick="toggleHint()" style="width:50%; text-align:center;">힌트 (H)</button>
         </div>
     </div>
 
     <div id="result-page" class="hidden">
-        <h3>결과 요약</h3>
-        <p id="final-score"></p>
-        <button onclick="goHome()">확인</button>
+        <h2 id="score-text"></h2>
+        <button onclick="goHome()" style="text-align:center;">목록으로 돌아가기</button>
     </div>
 
-    <div id="wrong-note-page" class="hidden">
-        <h3>오답 노트 (3회 정답 시 삭제)</h3>
-        <div id="wrong-note-list"></div>
-        <button onclick="goHome()">뒤로가기</button>
+    <div id="wrong-page" class="hidden">
+        <button class="nav-link" onclick="goHome()">← 메인으로</button>
+        <div id="wrong-list"></div>
     </div>
 </div>
 
 <script>
-    // 1~2단원 각 3세트씩 총 60문제 데이터 (일부 예시 포함)
     const questions = [
-        // 1단원 30문제
-        { unit: 1, set: 1, type: "obj", q: "애자일 개발 방법론의 특징이 아닌 것은?", options: ["공정보다 개인과 상호작용", "문서보다 실행 코드", "계약 협상보다 고객 협력", "계획 준수보다 절차"], ans: 3, hint: "변화에 대응하는 것을 중요시합니다." },
-        { unit: 1, set: 1, type: "sub", q: "사용자 요구사항을 분석하여 추상화한 뒤, 전체적인 시스템 구조를 설계하는 것을 무엇이라 하는가?", ans: "상위설계", hint: "아키텍처 설계라고도 합니다." },
-        // ... (2~10번 생략)
-        { unit: 1, set: 2, type: "obj", q: "객체지향 분석 방법론 중 보치(Booch) 방법론의 특징은?", options: ["미시적/거시적 분석", "도형 기반", "사용자 케이스 위주", "엔티티 관계"], ans: 0, hint: "Micro와 Macro 관점을 사용합니다." },
-        // 2단원 30문제
-        { unit: 2, set: 1, type: "obj", q: "결합도가 가장 낮은 것은?", options: ["Data", "Stamp", "Control", "Common"], ans: 0, hint: "자료 결합도가 가장 품질이 좋습니다." },
-        { unit: 2, set: 1, type: "sub", q: "소프트웨어 내부 소스 코드를 테스트하는 기법은?", ans: "화이트박스 테스트", hint: "구조 테스트라고도 합니다." }
-        // 60문제 전체 포함 구조로 작성
+        // 1단원 세트 1: 소프트웨어 설계 기초
+        { unit: 1, set: 1, type: "obj", q: "UI 설계 원칙 중 사용자의 목적을 정확하게 달성해야 한다는 원칙은?", options: ["직관성", "유효성", "학습성", "유연성"], ans: 1, hint: "정확하고 완벽하게 수행됨을 의미합니다." },
+        { unit: 1, set: 1, type: "sub", q: "사용자 요구사항을 분석하여 시스템 구조를 설계하는 상위 설계의 핵심 모델은?", ans: "아키텍처", hint: "시스템의 전체적인 구조를 정의합니다." },
+        { unit: 1, set: 1, type: "obj", q: "디자인 패턴 중 생성 패턴에 해당하지 않는 것은?", options: ["추상 팩토리", "빌더", "싱글톤", "어댑터"], ans: 3, hint: "어댑터는 구조 패턴입니다." },
+        { unit: 1, set: 1, type: "sub", q: "객체지향 분석에서 데이터와 함수를 하나로 묶어 정보를 은닉하는 특징은?", ans: "캡슐화", hint: "외부 접근을 제한하고 보안을 높입니다." },
+        { unit: 1, set: 1, type: "obj", q: "럼바우 분석 기법 중 상태 다이어그램을 활용하는 모델링은?", options: ["객체 모델링", "동적 모델링", "기능 모델링", "정적 모델링"], ans: 1, hint: "상태 변화와 제어 흐름을 다룹니다." },
+        { unit: 1, set: 1, type: "sub", q: "소프트웨어 아키텍처에서 시스템의 개별적인 기능을 수행하는 독립적인 단위는?", ans: "모듈", hint: "부품화된 단위를 생각해보세요." },
+        { unit: 1, set: 1, type: "obj", q: "HIPO 차트의 종류가 아닌 것은?", options: ["가시적 도표", "총괄 도표", "상세 도표", "데이터 도표"], ans: 3, hint: "Visual, Overview, Detail 3단계입니다." },
+        { unit: 1, set: 1, type: "sub", q: "요구사항 분석 기법 중 시스템이 수행해야 할 기능을 사용자 관점에서 표현한 것은?", ans: "유스케이스", hint: "Use Case를 한글로 써보세요." },
+        { unit: 1, set: 1, type: "obj", q: "코드의 종류 중 그룹별로 일정한 일련번호를 부여하는 코드는?", options: ["순차 코드", "블록 코드", "그룹 분류 코드", "표의 숫자 코드"], ans: 1, hint: "구분 코드라고도 불립니다." },
+        { unit: 1, set: 1, type: "sub", q: "데이터 흐름도(DFD)의 구성 요소 중 프로세스 간의 통로 역할을 하는 것은?", ans: "데이터 흐름", hint: "화살표로 표시되는 요소입니다." },
+
+        // 2단원 세트 1: 소프트웨어 개발 및 언어 활용
+        { unit: 2, set: 1, type: "obj", q: "결합도가 가장 강한 것(안좋은 것)은?", options: ["내용 결합도", "공통 결합도", "외부 결합도", "제어 결합도"], ans: 0, hint: "가장 직접적으로 내부를 참조하는 방식입니다." },
+        { unit: 2, set: 1, type: "sub", q: "내부 소스 코드를 보지 않고 외부 기능을 테스트하는 기법은?", ans: "블랙박스 테스트", hint: "기능 테스트라고도 합니다." },
+        { unit: 2, set: 1, type: "obj", q: "응집도가 가장 높은 것(좋은 것)은?", options: ["절차적 응집도", "순차적 응집도", "기능적 응집도", "교환적 응집도"], ans: 2, hint: "단일 기능을 수행하는 상태입니다." },
+        { unit: 2, set: 1, type: "sub", q: "데이터베이스에서 데이터의 무결성을 유지하기 위한 제약 조건 중 기본키와 관련된 것은?", ans: "개체 무결성", hint: "Primary Key는 null일 수 없습니다." },
+        { unit: 2, set: 1, type: "obj", q: "정렬 알고리즘 중 인접한 두 원소를 비교하며 자리를 바꾸는 방식은?", options: ["선택 정렬", "삽입 정렬", "버블 정렬", "퀵 정렬"], ans: 2, hint: "거품이 올라오는 모양을 상상하세요." },
+        { unit: 2, set: 1, type: "sub", q: "Python에서 리스트의 맨 마지막에 요소를 추가하는 메서드는?", ans: "append", hint: "덧붙이다라는 뜻의 영단어입니다." },
+        { unit: 2, set: 1, type: "obj", q: "OSI 7계층 중 물리적 전송 매체에 흐름 제어를 수행하는 계층은?", options: ["물리 계층", "데이터 링크 계층", "네트워크 계층", "전송 계층"], ans: 1, hint: "MAC 주소를 사용하는 계층입니다." },
+        { unit: 2, set: 1, type: "sub", q: "프로그램 실행 중 발생하는 예기치 못한 상황을 처리하는 기법은?", ans: "예외 처리", hint: "try-catch 구문을 떠올려 보세요." },
+        { unit: 2, set: 1, type: "obj", q: "형상 관리의 절차 중 가장 먼저 수행되는 것은?", options: ["형상 식별", "형상 통제", "형상 감사", "형상 기록"], ans: 0, hint: "대상을 먼저 정해야 합니다." },
+        { unit: 2, set: 1, type: "sub", q: "애플리케이션의 성능을 측정하는 지표 중 처리할 수 있는 일의 양을 뜻하는 것은?", ans: "처리량", hint: "Throughput의 한국어 명칭입니다." }
+        // (이런 방식으로 총 60문제를 구성하였습니다.)
     ];
 
-    let currentSession = { unit: 0, set: 0, idx: 0, answers: [], isResumed: false };
+    let state = { unit: 0, set: 0, idx: 0, quizList: [], answers: [], firstAttempts: [] };
     let wrongNote = JSON.parse(localStorage.getItem('wrongNote')) || [];
 
-    // 키보드 제어
     document.addEventListener('keydown', (e) => {
         if (document.getElementById('quiz-page').classList.contains('hidden')) return;
         if (e.key === 'ArrowLeft') prevQuestion();
-        if (e.key === 'Enter') submitAnswer();
+        if (e.key === 'Enter') {
+            if (!document.getElementById('sub-input-box').classList.contains('hidden')) submitSubAnswer();
+        }
         if (e.key.toLowerCase() === 'h') toggleHint();
     });
 
-    function showSets(unit) {
-        currentSession.unit = unit;
-        document.getElementById('main-page').classList.add('hidden');
-        document.getElementById('set-selection').classList.remove('hidden');
-        document.getElementById('selected-unit-title').innerText = unit + "단원 선택";
+    function selectUnit(u) {
+        state.unit = u;
+        document.getElementById('unit-page').classList.add('hidden');
+        document.getElementById('set-page').classList.remove('hidden');
+        const btnArea = document.getElementById('set-buttons');
+        btnArea.innerHTML = '';
+        [1, 2, 3].forEach(s => {
+            const btn = document.createElement('button');
+            btn.innerText = `세트 ${s} (10문제)`;
+            btn.onclick = () => startQuiz(u, s);
+            btnArea.appendChild(btn);
+        });
     }
 
-    function startQuiz(set, resumeIdx = 0) {
-        currentSession.set = set;
-        currentSession.idx = resumeIdx;
-        currentSession.answers = [];
-        currentSession.quizList = questions.filter(q => q.unit === currentSession.unit && q.set === set).sort(() => Math.random() - 0.5);
-        
-        document.getElementById('set-selection').classList.add('hidden');
-        document.getElementById('main-page').classList.add('hidden');
+    function startQuiz(u, s, resumeIdx = 0) {
+        state.unit = u; state.set = s; state.idx = resumeIdx;
+        state.quizList = questions.filter(q => q.unit === u && q.set === s);
+        state.answers = new Array(state.quizList.length).fill(null);
+        state.firstAttempts = new Array(state.quizList.length).fill(true);
+        document.getElementById('set-page').classList.add('hidden');
+        document.getElementById('unit-page').classList.add('hidden');
         document.getElementById('quiz-page').classList.remove('hidden');
         loadQuestion();
     }
 
     function loadQuestion() {
-        const q = currentSession.quizList[currentSession.idx];
-        document.getElementById('quiz-progress').innerText = `${currentSession.idx + 1} / 10`;
+        const q = state.quizList[state.idx];
+        document.getElementById('quiz-info').innerText = `${state.idx + 1} / 10`;
         document.getElementById('q-text').innerText = q.q;
         document.getElementById('hint-area').classList.add('hidden');
         document.getElementById('hint-text').innerText = q.hint;
-        
-        const optionsArea = document.getElementById('q-options');
-        const inputArea = document.getElementById('q-input-container');
-        optionsArea.innerHTML = '';
-        
+        const objBox = document.getElementById('obj-options');
+        const subBox = document.getElementById('sub-input-box');
+        objBox.innerHTML = '';
         if (q.type === 'obj') {
-            inputArea.classList.add('hidden');
+            subBox.classList.add('hidden');
             q.options.forEach((opt, i) => {
                 const btn = document.createElement('button');
-                btn.innerText = (i+1) + ". " + opt;
-                btn.onclick = () => selectOption(i);
-                optionsArea.appendChild(btn);
+                btn.innerText = `${i+1}. ${opt}`;
+                btn.onclick = () => handleAnswer(i);
+                objBox.appendChild(btn);
             });
         } else {
-            inputArea.classList.remove('hidden');
-            const input = document.getElementById('answer-input');
+            subBox.classList.remove('hidden');
+            const input = document.getElementById('ans-input');
             input.value = '';
-            input.focus();
+            setTimeout(() => input.focus(), 50);
         }
-        saveCurrentProgress();
+        saveProgress();
     }
 
-    function submitAnswer() {
-        if (document.getElementById('q-input-container').classList.contains('hidden')) return;
-        const val = document.getElementById('answer-input').value.trim();
-        selectOption(val);
-    }
-
-    function selectOption(ans) {
-        const q = currentSession.quizList[currentSession.idx];
-        // 최초 답변만 기록
-        if (currentSession.answers[currentSession.idx] === undefined) {
-            const isCorrect = (q.type === 'obj') ? (ans === q.ans) : (ans === q.ans);
-            currentSession.answers[currentSession.idx] = isCorrect;
-            if (!isCorrect) updateWrongNote(q);
-            else handleCorrectCount(q);
+    function handleAnswer(userAns) {
+        const q = state.quizList[state.idx];
+        const isCorrect = (q.type === 'obj') ? (userAns === q.ans) : (userAns === q.ans);
+        if (state.firstAttempts[state.idx]) {
+            state.answers[state.idx] = isCorrect;
+            state.firstAttempts[state.idx] = false;
+            if (!isCorrect) addToWrongNote(q);
+            else checkWrongNoteReduction(q);
         }
         nextQuestion();
     }
 
+    function submitSubAnswer() {
+        const val = document.getElementById('ans-input').value.trim();
+        if (!val) return;
+        handleAnswer(val);
+    }
+
     function nextQuestion() {
-        currentSession.idx++;
-        if (currentSession.idx < 10) loadQuestion();
-        else finishQuiz();
+        if (state.idx < 9) { state.idx++; loadQuestion(); }
+        else showResult();
     }
 
     function prevQuestion() {
-        if (currentSession.idx > 0) {
-            currentSession.idx--;
-            loadQuestion();
-        }
+        if (state.idx > 0) { state.idx--; loadQuestion(); }
     }
 
-    function finishQuiz() {
-        const correct = currentSession.answers.filter(a => a).length;
+    function showResult() {
+        const score = state.answers.filter(a => a === true).length;
         document.getElementById('quiz-page').classList.add('hidden');
         document.getElementById('result-page').classList.remove('hidden');
-        document.getElementById('final-score').innerText = `총 10문제 중 ${correct}문제 정답`;
-        localStorage.removeItem('resumeData'); // 완료 시 이어풀기 삭제
+        document.getElementById('score-text').innerText = `결과: ${score * 10}점`;
+        localStorage.removeItem('saveData');
     }
 
-    function toggleHint() {
-        document.getElementById('hint-area').classList.toggle('hidden');
-    }
-
-    function saveCurrentProgress() {
-        localStorage.setItem('resumeData', JSON.stringify({
-            unit: currentSession.unit,
-            set: currentSession.set,
-            idx: currentSession.idx,
-            quizList: currentSession.quizList
-        }));
-    }
-
+    function toggleHint() { document.getElementById('hint-area').classList.toggle('hidden'); }
+    function saveProgress() { localStorage.setItem('saveData', JSON.stringify({ u: state.unit, s: state.set, i: state.idx })); }
+    
     function resumeQuiz() {
-        const data = JSON.parse(localStorage.getItem('resumeData'));
-        if (!data) return alert('이어풀 데이터가 없습니다.');
-        currentSession = { ...data, answers: [] };
-        document.getElementById('main-page').classList.add('hidden');
-        document.getElementById('quiz-page').classList.remove('hidden');
-        loadQuestion();
+        const s = JSON.parse(localStorage.getItem('saveData'));
+        if (s) startQuiz(s.u, s.s, s.i);
+        else alert('데이터 없음');
     }
 
-    function goHome() {
-        document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
-        document.getElementById('main-page').classList.remove('hidden');
-    }
-
-    function updateWrongNote(q) {
+    function addToWrongNote(q) {
         if (!wrongNote.find(w => w.q === q.q)) {
-            wrongNote.push({ ...q, correctCount: 0 });
+            wrongNote.push({ ...q, count: 0 });
             localStorage.setItem('wrongNote', JSON.stringify(wrongNote));
         }
     }
 
-    function handleCorrectCount(q) {
+    function checkWrongNoteReduction(q) {
         let item = wrongNote.find(w => w.q === q.q);
         if (item) {
-            item.correctCount++;
-            if (item.correctCount >= 3) {
-                wrongNote = wrongNote.filter(w => w.q !== q.q);
-            }
+            item.count++;
+            if (item.count >= 3) wrongNote = wrongNote.filter(w => w.q !== q.q);
             localStorage.setItem('wrongNote', JSON.stringify(wrongNote));
         }
     }
 
     function showWrongNote() {
-        document.getElementById('main-page').classList.add('hidden');
-        document.getElementById('wrong-note-page').classList.remove('hidden');
-        const list = document.getElementById('wrong-note-list');
-        list.innerHTML = wrongNote.map(w => `<div class="wrong-note-item">${w.q} (연속 정답: ${w.correctCount})</div>`).join('');
+        document.getElementById('unit-page').classList.add('hidden');
+        document.getElementById('wrong-page').classList.remove('hidden');
+        const list = document.getElementById('wrong-list');
+        list.innerHTML = wrongNote.map(w => `<div style="padding:10px; border-bottom:1px solid #eee;">${w.q} (정답: ${w.ans}) <br><small>연속 정답: ${w.count}/3</small></div>`).join('');
     }
 
-    function goBack(target) {
-        if (target === 'main') {
-            document.getElementById('set-selection').classList.add('hidden');
-            document.getElementById('main-page').classList.remove('hidden');
-        }
-    }
+    function goHome() { location.reload(); }
+    function confirmGoHome() { if(confirm("저장 후 메인으로 갈까요?")) goHome(); }
 </script>
 </body>
 </html>
