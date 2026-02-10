@@ -3,105 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>정처기 1·2단원 마스터 퀴즈</title>
+    <title>Document Viewer</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4a90e2; --accent: #ff6b6b; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
-        .quiz-container { background: var(--card); width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .progress-bar { background: #eee; height: 8px; border-radius: 4px; flex-grow: 1; margin: 0 15px; overflow: hidden; }
-        .progress-fill { background: var(--primary); height: 100%; width: 0%; transition: 0.3s; }
-        .question-box { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; min-height: 80px; }
-        .options { display: grid; gap: 10px; }
-        button.option { padding: 15px; border: 2px solid #eee; border-radius: 12px; background: none; cursor: pointer; text-align: left; font-size: 1rem; transition: 0.2s; }
-        button.option:hover { border-color: var(--primary); background: #f0f7ff; }
-        .result-screen { text-align: center; display: none; }
-        .score { font-size: 3rem; font-weight: 800; color: var(--primary); }
+        :root { --main-bg: #ffffff; --text: #333333; --border: #dddddd; --hover: #f5f5f5; }
+        body { font-family: sans-serif; background: var(--main-bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+        #app { max-width: 800px; margin: 0 auto; border: 1px solid var(--border); padding: 20px; min-height: 500px; }
+        .hidden { display: none; }
+        button { background: #fff; border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; margin: 5px; font-size: 14px; }
+        button:hover { background: var(--hover); }
+        input[type="text"] { border: 1px solid var(--border); padding: 10px; width: 80%; outline: none; }
+        .nav-btn { font-size: 12px; color: #888; border: none; background: none; text-decoration: underline; }
+        .hint-text { color: #666; font-style: italic; margin-top: 10px; font-size: 0.9em; }
+        .wrong-note-item { border-bottom: 1px solid #eee; padding: 10px 0; }
     </style>
 </head>
 <body>
 
-<div class="quiz-container" id="quiz-app">
-    <div id="game-screen">
-        <div class="header">
-            <span id="q-count">1/60</span>
-            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-            <span id="timer">00:00</span>
+<div id="app">
+    <div id="main-page">
+        <h3>문서 목록</h3>
+        <div id="unit-selection">
+            <button onclick="showSets(1)">1단원: 소프트웨어 설계</button>
+            <button onclick="showSets(2)">2단원: 소프트웨어 개발</button>
         </div>
-        <div class="question-box" id="question">문제를 불러오는 중...</div>
-        <div class="options" id="options"></div>
+        <div id="set-selection" class="hidden">
+            <p id="selected-unit-title"></p>
+            <button onclick="startQuiz(1)">Set 1</button>
+            <button onclick="startQuiz(2)">Set 2</button>
+            <button onclick="startQuiz(3)">Set 3</button>
+            <br>
+            <button class="nav-btn" onclick="goBack('main')">뒤로가기</button>
+        </div>
+        <hr>
+        <button onclick="resumeQuiz()">이전 문제 이어풀기</button>
+        <button onclick="showWrongNote()">오답 노트</button>
     </div>
 
-    <div class="result-screen" id="result-screen">
-        <h2>수고하셨습니다!</h2>
-        <div class="score" id="final-score">0</div>
-        <p>오늘의 공부 완료!</p>
-        <button onclick="location.reload()" style="padding: 15px 30px; border-radius: 50px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer;">다시 도전</button>
+    <div id="quiz-page" class="hidden">
+        <div style="display: flex; justify-content: space-between;">
+            <button class="nav-btn" onclick="goHome()">메인으로</button>
+            <span id="quiz-progress" style="font-size: 12px;"></span>
+        </div>
+        <div id="question-container">
+            <p id="q-text" style="font-weight: bold;"></p>
+            <div id="q-options" class="options-list"></div>
+            <div id="q-input-container" class="hidden">
+                <input type="text" id="answer-input" placeholder="답변 입력 (Enter)">
+                <button onclick="submitAnswer()">제출</button>
+            </div>
+            <div id="hint-area" class="hidden">
+                <p id="hint-text" class="hint-text"></p>
+            </div>
+            <p style="font-size: 11px; color: #999;">단축키: 힌트(H), 이전(←), 제출(Enter)</p>
+        </div>
+        <div id="navigation">
+            <button onclick="prevQuestion()">이전 문제 보기</button>
+            <button onclick="toggleHint()">힌트 보기(H)</button>
+        </div>
+    </div>
+
+    <div id="result-page" class="hidden">
+        <h3>결과 요약</h3>
+        <p id="final-score"></p>
+        <button onclick="goHome()">확인</button>
+    </div>
+
+    <div id="wrong-note-page" class="hidden">
+        <h3>오답 노트 (3회 정답 시 삭제)</h3>
+        <div id="wrong-note-list"></div>
+        <button onclick="goHome()">뒤로가기</button>
     </div>
 </div>
 
 <script>
-    // 1단원 30문제 + 2단원 30문제 (총 60문제)
-    const allQuestions = [
-        // 1단원 예시 세트
-        { q: "UI 설계 원칙 중 누구나 쉽게 이해하고 사용할 수 있어야 한다는 원칙은?", a: ["직관성", "유효성", "학습성", "유연성"], c: 0 },
-        { q: "객체지향 분석 방법론 중 E-R 다이어그램을 사용하여 객체 모델링을 하는 방법은?", a: ["Coan-Yourdon", "Booch", "Jacobson", "Rumbaugh"], c: 3 },
-        { q: "디자인 패턴 중 생성 패턴에 속하지 않는 것은?", a: ["Abstract Factory", "Builder", "Adapter", "Singleton"], c: 2 },
-        // ... (중략: 실제 파일에는 60문제를 꽉 채워 넣어주세요)
-        { q: "소프트웨어 상위 설계에 해당하지 않는 것은?", a: ["아키텍처 설계", "인터페이스 정의", "모듈 세부 설계", "DB 설계"], c: 2 },
-        { q: "DBMS의 필수 기능 3가지가 아닌 것은?", a: ["정의 기능", "조작 기능", "제어 기능", "연결 기능"], c: 3 },
-        
-        // 2단원 예시 세트
-        { q: "Python에서 리스트에 요소를 마지막에 추가하는 함수는?", a: ["add()", "push()", "append()", "insert()"], c: 2 },
-        { q: "OSI 7계층 중 종단 간 신뢰성 있고 투명한 데이터 전송을 제공하는 계층은?", a: ["물리 계층", "전송 계층", "세션 계층", "표현 계층"], c: 1 },
-        { q: "결합도가 가장 낮은(가장 좋은) 것은?", a: ["내용 결합도", "공통 결합도", "자료 결합도", "제어 결합도"], c: 2 },
-        { q: "C언어에서 포인터 변수를 선언할 때 사용하는 기호는?", a: ["&", "*", "#", "$"], c: 1 },
-        { q: "응집도가 가장 높은(가장 좋은) 것은?", a: ["기능적 응집도", "순차적 응집도", "절차적 응집도", "우연적 응집도"], c: 0 }
-        // 60문제 랜덤 생성을 위해 여기에 더 많은 문제를 추가하시면 됩니다!
+    // 1~2단원 각 3세트씩 총 60문제 데이터 (일부 예시 포함)
+    const questions = [
+        // 1단원 30문제
+        { unit: 1, set: 1, type: "obj", q: "애자일 개발 방법론의 특징이 아닌 것은?", options: ["공정보다 개인과 상호작용", "문서보다 실행 코드", "계약 협상보다 고객 협력", "계획 준수보다 절차"], ans: 3, hint: "변화에 대응하는 것을 중요시합니다." },
+        { unit: 1, set: 1, type: "sub", q: "사용자 요구사항을 분석하여 추상화한 뒤, 전체적인 시스템 구조를 설계하는 것을 무엇이라 하는가?", ans: "상위설계", hint: "아키텍처 설계라고도 합니다." },
+        // ... (2~10번 생략)
+        { unit: 1, set: 2, type: "obj", q: "객체지향 분석 방법론 중 보치(Booch) 방법론의 특징은?", options: ["미시적/거시적 분석", "도형 기반", "사용자 케이스 위주", "엔티티 관계"], ans: 0, hint: "Micro와 Macro 관점을 사용합니다." },
+        // 2단원 30문제
+        { unit: 2, set: 1, type: "obj", q: "결합도가 가장 낮은 것은?", options: ["Data", "Stamp", "Control", "Common"], ans: 0, hint: "자료 결합도가 가장 품질이 좋습니다." },
+        { unit: 2, set: 1, type: "sub", q: "소프트웨어 내부 소스 코드를 테스트하는 기법은?", ans: "화이트박스 테스트", hint: "구조 테스트라고도 합니다." }
+        // 60문제 전체 포함 구조로 작성
     ];
 
-    let currentIdx = 0;
-    let score = 0;
-    let quizData = [];
+    let currentSession = { unit: 0, set: 0, idx: 0, answers: [], isResumed: false };
+    let wrongNote = JSON.parse(localStorage.getItem('wrongNote')) || [];
 
-    function initQuiz() {
-        // 문제 랜덤하게 섞기
-        quizData = allQuestions.sort(() => Math.random() - 0.5).slice(0, 60);
-        showQuestion();
+    // 키보드 제어
+    document.addEventListener('keydown', (e) => {
+        if (document.getElementById('quiz-page').classList.contains('hidden')) return;
+        if (e.key === 'ArrowLeft') prevQuestion();
+        if (e.key === 'Enter') submitAnswer();
+        if (e.key.toLowerCase() === 'h') toggleHint();
+    });
+
+    function showSets(unit) {
+        currentSession.unit = unit;
+        document.getElementById('main-page').classList.add('hidden');
+        document.getElementById('set-selection').classList.remove('hidden');
+        document.getElementById('selected-unit-title').innerText = unit + "단원 선택";
     }
 
-    function showQuestion() {
-        if (currentIdx >= quizData.length) return showResult();
+    function startQuiz(set, resumeIdx = 0) {
+        currentSession.set = set;
+        currentSession.idx = resumeIdx;
+        currentSession.answers = [];
+        currentSession.quizList = questions.filter(q => q.unit === currentSession.unit && q.set === set).sort(() => Math.random() - 0.5);
         
-        const q = quizData[currentIdx];
-        document.getElementById('q-count').innerText = `${currentIdx + 1}/${quizData.length}`;
-        document.getElementById('progress').style.width = `${((currentIdx + 1) / quizData.length) * 100}%`;
-        document.getElementById('question').innerText = q.q;
+        document.getElementById('set-selection').classList.add('hidden');
+        document.getElementById('main-page').classList.add('hidden');
+        document.getElementById('quiz-page').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = currentSession.quizList[currentSession.idx];
+        document.getElementById('quiz-progress').innerText = `${currentSession.idx + 1} / 10`;
+        document.getElementById('q-text').innerText = q.q;
+        document.getElementById('hint-area').classList.add('hidden');
+        document.getElementById('hint-text').innerText = q.hint;
         
-        const optionsDiv = document.getElementById('options');
-        optionsDiv.innerHTML = '';
-        q.a.forEach((opt, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'option';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(i);
-            optionsDiv.appendChild(btn);
-        });
+        const optionsArea = document.getElementById('q-options');
+        const inputArea = document.getElementById('q-input-container');
+        optionsArea.innerHTML = '';
+        
+        if (q.type === 'obj') {
+            inputArea.classList.add('hidden');
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.innerText = (i+1) + ". " + opt;
+                btn.onclick = () => selectOption(i);
+                optionsArea.appendChild(btn);
+            });
+        } else {
+            inputArea.classList.remove('hidden');
+            const input = document.getElementById('answer-input');
+            input.value = '';
+            input.focus();
+        }
+        saveCurrentProgress();
     }
 
-    function checkAnswer(i) {
-        if (i === quizData[currentIdx].c) score++;
-        currentIdx++;
-        showQuestion();
+    function submitAnswer() {
+        if (document.getElementById('q-input-container').classList.contains('hidden')) return;
+        const val = document.getElementById('answer-input').value.trim();
+        selectOption(val);
     }
 
-    function showResult() {
-        document.getElementById('game-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        document.getElementById('final-score').innerText = `${score} / ${quizData.length}`;
+    function selectOption(ans) {
+        const q = currentSession.quizList[currentSession.idx];
+        // 최초 답변만 기록
+        if (currentSession.answers[currentSession.idx] === undefined) {
+            const isCorrect = (q.type === 'obj') ? (ans === q.ans) : (ans === q.ans);
+            currentSession.answers[currentSession.idx] = isCorrect;
+            if (!isCorrect) updateWrongNote(q);
+            else handleCorrectCount(q);
+        }
+        nextQuestion();
     }
 
-    initQuiz();
+    function nextQuestion() {
+        currentSession.idx++;
+        if (currentSession.idx < 10) loadQuestion();
+        else finishQuiz();
+    }
+
+    function prevQuestion() {
+        if (currentSession.idx > 0) {
+            currentSession.idx--;
+            loadQuestion();
+        }
+    }
+
+    function finishQuiz() {
+        const correct = currentSession.answers.filter(a => a).length;
+        document.getElementById('quiz-page').classList.add('hidden');
+        document.getElementById('result-page').classList.remove('hidden');
+        document.getElementById('final-score').innerText = `총 10문제 중 ${correct}문제 정답`;
+        localStorage.removeItem('resumeData'); // 완료 시 이어풀기 삭제
+    }
+
+    function toggleHint() {
+        document.getElementById('hint-area').classList.toggle('hidden');
+    }
+
+    function saveCurrentProgress() {
+        localStorage.setItem('resumeData', JSON.stringify({
+            unit: currentSession.unit,
+            set: currentSession.set,
+            idx: currentSession.idx,
+            quizList: currentSession.quizList
+        }));
+    }
+
+    function resumeQuiz() {
+        const data = JSON.parse(localStorage.getItem('resumeData'));
+        if (!data) return alert('이어풀 데이터가 없습니다.');
+        currentSession = { ...data, answers: [] };
+        document.getElementById('main-page').classList.add('hidden');
+        document.getElementById('quiz-page').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function goHome() {
+        document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+        document.getElementById('main-page').classList.remove('hidden');
+    }
+
+    function updateWrongNote(q) {
+        if (!wrongNote.find(w => w.q === q.q)) {
+            wrongNote.push({ ...q, correctCount: 0 });
+            localStorage.setItem('wrongNote', JSON.stringify(wrongNote));
+        }
+    }
+
+    function handleCorrectCount(q) {
+        let item = wrongNote.find(w => w.q === q.q);
+        if (item) {
+            item.correctCount++;
+            if (item.correctCount >= 3) {
+                wrongNote = wrongNote.filter(w => w.q !== q.q);
+            }
+            localStorage.setItem('wrongNote', JSON.stringify(wrongNote));
+        }
+    }
+
+    function showWrongNote() {
+        document.getElementById('main-page').classList.add('hidden');
+        document.getElementById('wrong-note-page').classList.remove('hidden');
+        const list = document.getElementById('wrong-note-list');
+        list.innerHTML = wrongNote.map(w => `<div class="wrong-note-item">${w.q} (연속 정답: ${w.correctCount})</div>`).join('');
+    }
+
+    function goBack(target) {
+        if (target === 'main') {
+            document.getElementById('set-selection').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+        }
+    }
 </script>
 </body>
 </html>
