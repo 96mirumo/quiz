@@ -16,24 +16,21 @@
         .hint-box { color: #777; font-size: 13px; border: 1px dashed #ccc; padding: 10px; margin: 15px 0; }
         .status-bar { display: flex; justify-content: space-between; font-size: 11px; color: #bbb; margin-bottom: 15px; }
         .ans-btn { background: #555; color: #fff; text-align: center; }
-        .unit-title { font-weight: bold; margin: 15px 0 5px 0; font-size: 15px; }
-        .recent-score { font-size: 11px; color: #888; margin-left: 10px; }
+        .unit-title { font-weight: bold; margin: 15px 0 5px 0; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .recent-score { font-size: 11px; color: #888; margin-left: 10px; float: right; }
         .feedback { font-weight: bold; margin: 10px 0; padding: 10px; border: 1px solid var(--border); }
         .review-item { border-bottom: 1px solid #eee; padding: 15px 0; }
-        .scroll-area { max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .scroll-area { max-height: 450px; overflow-y: auto; padding-right: 10px; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div id="unit-page">
-        <div class="unit-title">1. 소프트웨어 설계</div>
+        <div class="unit-title">1단원: 소프트웨어 설계 (업데이트 완료)</div>
         <div id="unit1-sets"></div>
         
-        <div class="unit-title">2. 소프트웨어 개발</div>
-        <div id="unit2-sets"></div>
-
-        <div style="margin-top:20px; border-top:1px solid #eee; padding-top:10px;">
+        <div style="margin-top:30px; border-top:1px solid #eee; padding-top:15px;">
             <button onclick="resumeQuiz()">이전 문제 이어풀기</button>
             <button onclick="showWrongNote()">오답 노트 관리</button>
         </div>
@@ -46,8 +43,7 @@
         </div>
         <div id="q-content">
             <p id="q-text" style="font-weight: bold;"></p>
-            <div id="obj-options"></div>
-            <div id="sub-input-box" class="hidden">
+            <div id="sub-input-box">
                 <input type="text" id="ans-input" placeholder="답안 입력 (Enter)">
                 <button class="ans-btn" onclick="submitSubAnswer()">제출</button>
             </div>
@@ -57,7 +53,7 @@
                 <button class="ans-btn" id="next-btn" onclick="nextQuestion()">다음 문제 (Enter)</button>
             </div>
 
-            <div id="hint-area" class="hidden" class="hint-box">
+            <div id="hint-area" class="hidden">
                 <p id="hint-text" class="hint-box"></p>
             </div>
         </div>
@@ -70,7 +66,7 @@
     <div id="result-page" class="hidden">
         <h2 id="score-summary"></h2>
         <div class="scroll-area" id="review-list"></div>
-        <button onclick="goHome()" style="text-align:center; margin-top:20px;">메인 화면으로</button>
+        <button onclick="goHome()" style="text-align:center; margin-top:20px;">확인 및 메인으로</button>
     </div>
 
     <div id="wrong-page" class="hidden">
@@ -80,46 +76,114 @@
 </div>
 
 <script>
-    // 문제 데이터 (단원별 3세트씩 총 60문항 샘플 구조)
     const questions = [
-        { unit: 1, set: 1, type: "obj", q: "UI 설계 원칙 중 사용자의 목적을 정확하게 달성해야 한다는 원칙은?", options: ["직관성", "유효성", "학습성", "유연성"], ans: 1, hint: "정확하고 완벽한 수행을 뜻합니다." },
-        { unit: 1, set: 1, type: "sub", q: "시스템 구조를 설계하는 상위 설계의 핵심 모델은?", ans: "아키텍처", hint: "영어로는 Architecture입니다." },
-        // ... 생략된 문항들은 동일한 형식으로 60개까지 추가 가능
-        { unit: 2, set: 1, type: "obj", q: "결합도가 가장 강한 것(안좋은 것)은?", options: ["내용", "공통", "외부", "제어"], ans: 0, hint: "가장 직접적으로 내부를 참조합니다." },
-        { unit: 2, set: 1, type: "sub", q: "소스 코드를 보지 않고 테스트하는 기법은?", ans: "블랙박스 테스트", hint: "기능 위주의 테스트입니다." }
+        // 1단원 세트 1
+        { unit: 1, set: 1, q: "품질 높은 소프트웨어를 효율적으로 개발하기 위한 학문은?", ans: "소프트웨어 공학", hint: "S/W Engineering" },
+        { unit: 1, set: 1, q: "기존 시스템을 분석하여 설계 정보를 추출하는 소프트웨어 공학의 3R 요소는?", ans: "역공학", hint: "Reverse Engineering" },
+        { unit: 1, set: 1, q: "역공학을 통해 얻은 설계를 수정하여 새로운 시스템을 만드는 3R 요소는?", ans: "재공학", hint: "Re-engineering" },
+        { unit: 1, set: 1, q: "함수, 객체, 컴포넌트 등을 다른 시스템 개발에 기여하는 3R 요소는?", ans: "재사용", hint: "Reuse" },
+        { unit: 1, set: 1, q: "소프트웨어 개발 단계 중 계획, 분석 다음 단계는?", ans: "설계", hint: "구현 전 단계" },
+        { unit: 1, set: 1, q: "소프트웨어 개발 방법론 중 기업 데이터 중심의 방법론은?", ans: "정보공학 방법론", hint: "Information Engineering" },
+        { unit: 1, set: 1, q: "캡슐화, 정보은닉, 상속 등을 특징으로 하는 소프트웨어 개발 방법론은?", ans: "객체지향 개발 방법론", hint: "Object-Oriented" },
+        { unit: 1, set: 1, q: "컴포넌트 단위로 소프트웨어를 조립하여 개발하는 방법론은?", ans: "CBD 방법론", hint: "Component Based Development" },
+        { unit: 1, set: 1, q: "폭포수 모델의 단점을 보완하여 견본품을 만드는 개발 모델은?", ans: "프로토타이핑 모델", hint: "시제품 제작" },
+        { unit: 1, set: 1, q: "계획 수립, 위험 분석, 개발 및 검증, 고객 평가의 4단계로 진행되는 모델은?", ans: "나선형 모델", hint: "Spiral Model" },
+
+        // 1단원 세트 2
+        { unit: 1, set: 2, q: "나선형 모델에서 가장 핵심이 되는 단계는?", ans: "위험 분석", hint: "Risk Analysis" },
+        { unit: 1, set: 2, q: "애자일 방법론 중 XP의 5가지 핵심 가치는?", ans: "용기, 존중, 의사소통, 피드백, 단순성", hint: "용존의피단" },
+        { unit: 1, set: 2, q: "스크럼에서 백로그를 바탕으로 진행되는 실제 개발 주기를 뜻하는 용어는?", ans: "스프린트", hint: "Sprint" },
+        { unit: 1, set: 2, q: "프로젝트 핵심 관리 대상인 3P는 사람, 문제, 그리고 무엇인가?", ans: "프로세스", hint: "Person, Problem, Process" },
+        { unit: 1, set: 2, q: "하향식 비용 산정 기법 중 전문가 여러 명의 의견을 종합하는 기법은?", ans: "델파이 기법", hint: "Delphi" },
+        { unit: 1, set: 2, q: "원시 코드 라인 수를 기반으로 산정하는 상향식 비용 산정 기법은?", ans: "LOC 기법", hint: "Line of Code" },
+        { unit: 1, set: 2, q: "LOC 기법에서 낙관치, 기대치, 비관치를 조합한 공식을 통해 구하는 것은?", ans: "추정 LOC", hint: "(낙관 + 4*기대 + 비관) / 6" },
+        { unit: 1, set: 2, q: "COCOMO 모형 중 5만 라인 이하의 소규모 소프트웨어 개발 유형은?", ans: "조직형", hint: "Organic" },
+        { unit: 1, set: 2, q: "COCOMO 모형 중 30만 라인 이상의 대규모 소프트웨어 개발 유형은?", ans: "내장형", hint: "Embedded" },
+        { unit: 1, set: 2, q: "레이리 노든 곡선을 기반으로 비용을 산정하는 수학적 기법은?", ans: "푸남 기법", hint: "Putnam" },
+
+        // 1단원 세트 3
+        { unit: 1, set: 3, q: "기능 점수 기법에서 사용되는 자동화 도구는?", ans: "ESTIMACS", hint: "FP 자동화 도구" },
+        { unit: 1, set: 3, q: "기능 점수 산출 시 사용하는 기능 요소 중 시스템 외부로부터 들어오는 정보는?", ans: "외부 입력", hint: "External Input" },
+        { unit: 1, set: 3, q: "프로젝트 일정 산정 시 불확실한 상황에서 네트워크를 작성하는 기법은?", ans: "PERT", hint: "Program Evaluation and Review Technique" },
+        { unit: 1, set: 3, q: "프로젝트의 시작부터 끝까지 가장 긴 소요 기간을 의미하는 경로는?", ans: "임계 경로", hint: "Critical Path" },
+        { unit: 1, set: 3, q: "요구사항 개발 프로세스의 4단계 순서는?", ans: "도출, 분석, 명세, 확인", hint: "도분명확" },
+        { unit: 1, set: 3, q: "시스템이 제공하는 실제 기능을 정의하는 요구사항은?", ans: "기능 요구사항", hint: "Functional" },
+        { unit: 1, set: 3, q: "성능이나 보안 등 품질 특성과 제약사항을 정의하는 요구사항은?", ans: "비기능 요구사항", hint: "Non-functional" },
+        { unit: 1, set: 3, q: "하향식 개발을 위한 문서화 도구로 가시적, 총체적, 세부적 도표로 구성된 것은?", ans: "HIPO", hint: "Hierarchy Input Process Output" },
+        { unit: 1, set: 3, q: "구조적 분석 도구 중 자료의 흐름을 도식화한 다이어그램은?", ans: "자료 흐름도", hint: "DFD" },
+        { unit: 1, set: 3, q: "자료 흐름도의 4가지 구성 요소는?", ans: "프로세스, 자료 흐름, 자료 저장소, 단말", hint: "프흐저단" },
+
+        // 1단원 세트 4
+        { unit: 1, set: 4, q: "데이터의 정의, 데이터 타입, 허용 값 등을 정의한 명세서는?", ans: "자료 사전", hint: "Data Dictionary" },
+        { unit: 1, set: 4, q: "럼바우 분석 방법 중 객체 다이어그램을 사용하는 모델링은?", ans: "객체 모델링", hint: "가장 기본이 되는 모델링" },
+        { unit: 1, set: 4, q: "럼바우 분석 방법 중 상태 다이어그램을 사용하는 모델링은?", ans: "동적 모델링", hint: "상태 변화 강조" },
+        { unit: 1, set: 4, q: "럼바우 분석 방법 중 DFD를 사용하여 시스템의 기능을 표현하는 모델링은?", ans: "기능 모델링", hint: "입출력 중심" },
+        { unit: 1, set: 4, q: "유스케이스를 강조한 객체지향 분석 방법론은?", ans: "제이콥슨 방법", hint: "Use Case 중심" },
+        { unit: 1, set: 4, q: "아키텍처, 데이터, 인터페이스를 정의하는 설계 단계는?", ans: "상위 설계", hint: "전체 구조" },
+        { unit: 1, set: 4, q: "모듈, 자료구조, 알고리즘을 정의하는 설계 단계는?", ans: "하위 설계", hint: "상세 설계" },
+        { unit: 1, set: 4, q: "설계의 원리 중 내부 구현 내용을 숨기고 인터페이스로만 소통하는 것은?", ans: "정보 은닉", hint: "Information Hiding" },
+        { unit: 1, set: 4, q: "소프트웨어 아키텍처 4+1 뷰 중 시스템의 기능적 요구사항을 보여주는 것은?", ans: "논리 뷰", hint: "Logical View" },
+        { unit: 1, set: 4, q: "아키텍처 4+1 뷰 중 프로그램 실행 시의 시스템을 표현하는 것은?", ans: "프로세스 뷰", hint: "동적 행위" },
+
+        // 1단원 세트 5
+        { unit: 1, set: 5, q: "아키텍처 4+1 뷰 중 시스템의 물리적 배치를 보여주는 것은?", ans: "배치 뷰", hint: "Deployment View" },
+        { unit: 1, set: 5, q: "데이터 흐름을 필터로 전달하며 처리하는 아키텍처 패턴은?", ans: "파이프 필터 패턴", hint: "Pipe-Filter" },
+        { unit: 1, set: 5, q: "데이터, 시각화, 제어 로직을 분리하는 아키텍처 패턴은?", ans: "MVC 패턴", hint: "Model View Controller" },
+        { unit: 1, set: 5, q: "UML의 특징 4가지는 가시화, 명세화, 구축, 그리고 무엇인가?", ans: "문서화 언어", hint: "Documenting" },
+        { unit: 1, set: 5, q: "UML 관계 중 상속을 의미하며 실선 화살표로 표시하는 것은?", ans: "일반화 관계", hint: "Generalization" },
+        { unit: 1, set: 5, q: "UML 관계 중 짧은 시간 동안만 사용하는 관계로 점선 화살표로 표시하는 것은?", ans: "의존 관계", hint: "Dependency" },
+        { unit: 1, set: 5, q: "부분 객체가 독립적일 수 있으며 빈 마름모로 표시하는 집합 관계는?", ans: "집약 관계", hint: "Aggregation" },
+        { unit: 1, set: 5, q: "부분 객체가 전체 객체에 의존적이며 채운 마름모로 표시하는 집합 관계는?", ans: "합성 관계", hint: "Composition" },
+        { unit: 1, set: 5, q: "물리적인 노드와 통신 경로를 표현하는 UML 구조 다이어그램은?", ans: "배치 다이어그램", hint: "Deployment Diagram" },
+        { unit: 1, set: 5, q: "시간 순서에 따른 객체 간 상호작용을 표현하는 행위 다이어그램은?", ans: "순차 다이어그램", hint: "Sequence Diagram" },
+
+        // 1단원 세트 6
+        { unit: 1, set: 6, q: "UI의 유형 중 음성 인식 기반의 인터페이스는?", ans: "VUI", hint: "Voice User Interface" },
+        { unit: 1, set: 6, q: "UI 설계 원칙 중 누구나 쉽게 이해하고 사용할 수 있어야 한다는 원칙은?", ans: "직관성", hint: "Intuitiveness" },
+        { unit: 1, set: 6, q: "UI 설계 도구 중 시나리오 흐름을 전체적으로 나타내는 문서는?", ans: "스토리보드", hint: "Storyboard" },
+        { unit: 1, set: 6, q: "실제 화면과 유사한 정적인 디자인을 의미하는 UI 설계 도구는?", ans: "목업", hint: "Mockup" },
+        { unit: 1, set: 6, q: "모듈과 모듈 간의 관련성이나 의존성 정도를 의미하는 용어는?", ans: "결합도", hint: "Coupling" },
+        { unit: 1, set: 6, q: "전역 변수를 사용할 때 발생하는 가장 높은 수준의 결합도는?", ans: "공통 결합도", hint: "Common Coupling" },
+        { unit: 1, set: 6, q: "모듈 내부 구성 요소들이 단일한 목적을 위해 수행되는 정도는?", ans: "응집도", hint: "Cohesion" },
+        { unit: 1, set: 6, q: "응집도의 유형 중 가장 높은 수준의 응집도는?", ans: "기능적 응집도", hint: "Functional Cohesion" },
+        { unit: 1, set: 6, q: "비동기 방식으로 데이터를 교환하는 인터페이스 구현 기술은?", ans: "AJAX", hint: "Asynchronous JavaScript and XML" },
+        { unit: 1, set: 6, q: "자원, 행위, 표현으로 구성된 인터페이스 아키텍처는?", ans: "REST", hint: "Representational State Transfer" },
+        
+        // 추가 문항들 (파트 2 포함)
+        { unit: 1, set: 7, q: "객체지향 구성 요소 중 속성과 연산을 정의해서 만든 틀은?", ans: "클래스", hint: "Class" },
+        { unit: 1, set: 7, q: "클래스의 인스턴스를 의미하는 객체지향 구성 요소는?", ans: "객체", hint: "Object" },
+        { unit: 1, set: 7, q: "블랙박스 테스트 기법 중 입력 데이터 간의 관계를 분석하는 검사는?", ans: "원인 효과 그래프 검사", hint: "Cause-Effect Graphing" },
+        { unit: 1, set: 7, q: "고의로 실패를 유도하여 시스템 복구 능력을 점검하는 테스트는?", ans: "회복 테스트", hint: "Recovery Testing" },
+        { unit: 1, set: 7, q: "시스템의 응답 시간이나 처리량 등을 점검하는 테스트는?", ans: "성능 테스트", hint: "Performance Testing" },
+        { unit: 1, set: 7, q: "소프트웨어 개발의 지속적 통합을 의미하는 약어는?", ans: "CI", hint: "Continuous Integration" },
+        { unit: 1, set: 7, q: "디지털 콘텐츠의 저작권을 보호하고 불법 사용을 제한하는 기술은?", ans: "DRM", hint: "Digital Rights Management" },
+        { unit: 1, set: 7, q: "DRM 구성 요소 중 콘텐츠를 제공하는 저작권자는?", ans: "콘텐츠 제공자", hint: "Provider" }
     ];
 
     let state = { unit: 0, set: 0, idx: 0, quizList: [], answers: [], firstAttempts: [], logs: [] };
     let wrongNote = JSON.parse(localStorage.getItem('wrongNote')) || [];
     let recentScores = JSON.parse(localStorage.getItem('recentScores')) || {};
 
-    // 초기 메인 화면 세팅
     function initMain() {
-        renderSetList(1, 'unit1-sets');
-        renderSetList(2, 'unit2-sets');
-    }
-
-    function renderSetList(unit, containerId) {
-        const container = document.getElementById(containerId);
+        const container = document.getElementById('unit1-sets');
         container.innerHTML = '';
-        [1, 2, 3].forEach(s => {
-            const scoreKey = `${unit}-${s}`;
+        const sets = [...new Set(questions.filter(q => q.unit === 1).map(q => q.set))];
+        sets.forEach(s => {
+            const scoreKey = `1-${s}`;
             const score = recentScores[scoreKey] !== undefined ? `${recentScores[scoreKey]}점` : '기록없음';
             const btn = document.createElement('button');
             btn.innerHTML = `세트 ${s} <span class="recent-score">${score}</span>`;
-            btn.onclick = () => startQuiz(unit, s);
+            btn.onclick = () => startQuiz(1, s);
             container.appendChild(btn);
         });
     }
 
-    // 퀴즈 시작
     function startQuiz(u, s, resumeIdx = 0) {
         state.unit = u; state.set = s; state.idx = resumeIdx;
         state.quizList = questions.filter(q => q.unit === u && q.set === s);
         state.answers = new Array(state.quizList.length).fill(null);
         state.firstAttempts = new Array(state.quizList.length).fill(true);
         state.logs = [];
-        
         document.getElementById('unit-page').classList.add('hidden');
         document.getElementById('quiz-page').classList.remove('hidden');
         loadQuestion();
@@ -127,72 +191,43 @@
 
     function loadQuestion() {
         const q = state.quizList[state.idx];
-        document.getElementById('quiz-info').innerText = `${state.idx + 1} / 10`;
+        document.getElementById('quiz-info').innerText = `${state.idx + 1} / ${state.quizList.length}`;
         document.getElementById('q-text').innerText = q.q;
-        
-        // 초기화
         document.getElementById('hint-area').classList.add('hidden');
         document.getElementById('hint-text').innerText = q.hint;
         document.getElementById('feedback-area').classList.add('hidden');
         document.getElementById('quiz-nav-btns').classList.remove('hidden');
-        
-        const objBox = document.getElementById('obj-options');
-        const subBox = document.getElementById('sub-input-box');
-        objBox.innerHTML = '';
-        
-        if (q.type === 'obj') {
-            subBox.classList.add('hidden');
-            q.options.forEach((opt, i) => {
-                const btn = document.createElement('button');
-                btn.innerText = `${i+1}. ${opt}`;
-                btn.onclick = () => checkImmediateAnswer(i);
-                objBox.appendChild(btn);
-            });
-        } else {
-            subBox.classList.remove('hidden');
-            const input = document.getElementById('ans-input');
-            input.value = '';
-            setTimeout(() => input.focus(), 50);
-        }
+        const input = document.getElementById('ans-input');
+        input.value = '';
+        setTimeout(() => input.focus(), 50);
         saveProgress();
-    }
-
-    // 정답 즉시 확인 로직
-    function checkImmediateAnswer(userAns) {
-        const q = state.quizList[state.idx];
-        const isCorrect = (q.type === 'obj') ? (userAns === q.ans) : (userAns === q.ans);
-        const feedbackText = document.getElementById('feedback-text');
-        
-        // 피드백 표시
-        document.getElementById('feedback-area').classList.remove('hidden');
-        document.getElementById('quiz-nav-btns').classList.add('hidden'); // 정답 확인 중엔 이동버튼 숨김
-        
-        if (isCorrect) {
-            feedbackText.innerText = "정답입니다!";
-            feedbackText.style.color = "var(--correct)";
-        } else {
-            const correctStr = q.type === 'obj' ? `${q.ans + 1}. ${q.options[q.ans]}` : q.ans;
-            feedbackText.innerText = `오답입니다. 정답: ${correctStr}`;
-            feedbackText.style.color = "var(--wrong)";
-        }
-
-        // 최초 시도 점수 및 로그 기록
-        if (state.firstAttempts[state.idx]) {
-            state.answers[state.idx] = isCorrect;
-            state.firstAttempts[state.idx] = false;
-            state.logs.push({ q: q.q, isCorrect, userAns: (q.type === 'obj' ? q.options[userAns] : userAns), ans: (q.type === 'obj' ? q.options[q.ans] : q.ans) });
-            
-            if (!isCorrect) addToWrongNote(q);
-            else checkWrongNoteReduction(q);
-        }
-        
-        document.getElementById('next-btn').focus();
     }
 
     function submitSubAnswer() {
         const val = document.getElementById('ans-input').value.trim();
         if (!val) return;
-        checkImmediateAnswer(val);
+        const q = state.quizList[state.idx];
+        const isCorrect = (val.toLowerCase().replace(/\s/g, '') === q.ans.toLowerCase().replace(/\s/g, ''));
+        const feedbackText = document.getElementById('feedback-text');
+        document.getElementById('feedback-area').classList.remove('hidden');
+        document.getElementById('quiz-nav-btns').classList.add('hidden');
+        
+        if (isCorrect) {
+            feedbackText.innerText = "정답입니다!";
+            feedbackText.style.color = "var(--correct)";
+        } else {
+            feedbackText.innerText = `오답입니다. 정답: ${q.ans}`;
+            feedbackText.style.color = "var(--wrong)";
+        }
+
+        if (state.firstAttempts[state.idx]) {
+            state.answers[state.idx] = isCorrect;
+            state.firstAttempts[state.idx] = false;
+            state.logs.push({ q: q.q, isCorrect, userAns: val, ans: q.ans });
+            if (!isCorrect) addToWrongNote(q);
+            else checkWrongNoteReduction(q);
+        }
+        document.getElementById('next-btn').focus();
     }
 
     function nextQuestion() {
@@ -204,42 +239,34 @@
         }
     }
 
-    function prevQuestion() {
-        if (state.idx > 0) { state.idx--; loadQuestion(); }
-    }
+    function prevQuestion() { if (state.idx > 0) { state.idx--; loadQuestion(); } }
 
-    // 최종 점수 및 문항별 리포트
     function showFinalReport() {
-        const score = state.answers.filter(a => a === true).length * 10;
+        const score = Math.round((state.answers.filter(a => a === true).length / state.quizList.length) * 100);
         recentScores[`${state.unit}-${state.set}`] = score;
         localStorage.setItem('recentScores', JSON.stringify(recentScores));
-
         document.getElementById('quiz-page').classList.add('hidden');
         document.getElementById('result-page').classList.remove('hidden');
-        document.getElementById('score-summary').innerText = `총점: ${score}점`;
-
+        document.getElementById('score-summary').innerText = `결과: ${score}점`;
         const reviewList = document.getElementById('review-list');
         reviewList.innerHTML = state.logs.map((log, i) => `
             <div class="review-item">
                 <div style="color:${log.isCorrect ? 'var(--correct)' : 'var(--wrong)'}">
-                    ${i+1}. ${log.isCorrect ? '[정답]' : '[오답]'} ${log.q}
+                    ${i+1}. ${log.isCorrect ? '✓' : '✗'} ${log.q}
                 </div>
-                <div style="font-size:13px; margin-top:5px;">
+                <div style="font-size:13px; margin-top:5px; color:#666;">
                     입력: ${log.userAns} / 정답: ${log.ans}
                 </div>
             </div>
         `).join('');
-        
         localStorage.removeItem('saveData');
     }
 
     function toggleHint() { document.getElementById('hint-area').classList.toggle('hidden'); }
     function saveProgress() { localStorage.setItem('saveData', JSON.stringify({ u: state.unit, s: state.set, i: state.idx })); }
-    
     function resumeQuiz() {
         const s = JSON.parse(localStorage.getItem('saveData'));
-        if (s) startQuiz(s.u, s.s, s.i);
-        else alert('저장된 데이터가 없습니다.');
+        if (s) startQuiz(s.u, s.s, s.i); else alert('저장된 데이터가 없습니다.');
     }
 
     function addToWrongNote(q) {
@@ -262,31 +289,25 @@
         document.getElementById('unit-page').classList.add('hidden');
         document.getElementById('wrong-page').classList.remove('hidden');
         const list = document.getElementById('wrong-list');
-        list.innerHTML = wrongNote.map(w => `
+        list.innerHTML = wrongNote.length ? wrongNote.map(w => `
             <div class="review-item">
                 <div>${w.q}</div>
-                <div style="font-size:12px; color:#888;">정답: ${w.type==='obj' ? w.options[w.ans] : w.ans} | 연속성공: ${w.count}/3</div>
+                <div style="font-size:12px; color:#888; margin-top:5px;">정답: ${w.ans} | 연속성공: ${w.count}/3</div>
             </div>
-        `).join('');
+        `).join('') : '<p style="color:#999; text-align:center; margin-top:50px;">오답 노트가 비어 있습니다.</p>';
     }
 
     function goHome() { location.reload(); }
     function confirmGoHome() { if(confirm("진행 상황이 저장됩니다. 메인으로 갈까요?")) goHome(); }
 
-    // 단축키 설정
     document.addEventListener('keydown', (e) => {
         if (document.getElementById('quiz-page').classList.contains('hidden')) return;
-        
-        // 피드백창이 열려있을 때 Enter는 다음 문제로
         if (!document.getElementById('feedback-area').classList.contains('hidden')) {
             if (e.key === 'Enter') nextQuestion();
             return;
         }
-
         if (e.key === 'ArrowLeft') prevQuestion();
-        if (e.key === 'Enter') {
-            if (!document.getElementById('sub-input-box').classList.contains('hidden')) submitSubAnswer();
-        }
+        if (e.key === 'Enter') submitSubAnswer();
         if (e.key.toLowerCase() === 'h') toggleHint();
     });
 
